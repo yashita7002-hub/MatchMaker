@@ -46,7 +46,7 @@ export async function GET(req: Request) {
     const accessToken = tokenData.access_token;
     
     if (!accessToken) {
-      console.error('GitHub Token Exchange Failed:', tokenData);
+      console.error('GitHub Token Exchange Failed: ' + JSON.stringify(tokenData));
       return NextResponse.redirect(`${baseUrl}/login?error=invalid_token`);
     }
     
