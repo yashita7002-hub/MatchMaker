@@ -4,8 +4,6 @@ const next = require('next');
 const { Server } = require('socket.io');
 const multer = require('multer');
 const { v2: cloudinary } = require('cloudinary');
-const fs = require('fs');
-const path = require('path');
 const dotenv = require('dotenv');
 
 // Load environment variables (Next.js automatically loads .env.local, but for server.js we do it explicitly)
@@ -33,22 +31,9 @@ app.prepare().then(() => {
     });
   }
 
-  // Multer Disk Storage (always upload locally first)
-  const uploadDir = path.join(__dirname, 'public', 'uploads');
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-      cb(null, uniqueSuffix + path.extname(file.originalname));
-    },
-  });
-  const upload = multer({ storage });
+  // Multer Memory Storage - keeps file in RAM, not on disk (works on Railway's ephemeral FS)
+  const storage = multer.memoryStorage();
+  const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
 
   // Endpoint for file uploads
   server.post('/api/upload', upload.single('image'), async (req, res) => {
@@ -57,29 +42,37 @@ app.prepare().then(() => {
         return res.status(400).json({ error: 'No image file uploaded' });
       }
 
-      // Default URL if Cloudinary fails (Next.js serves public folder at root)
-      let imageUrl = `/uploads/${req.file.filename}`;
-
-      // Try uploading to Cloudinary
+      // In production, Cloudinary is required (Railway has ephemeral filesystem)
       if (hasCloudinary) {
         try {
-          const result = await cloudinary.uploader.upload(req.file.path, {
-            folder: 'project-matchmaker-chat',
-            allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+          // Upload directly from buffer - no temp file needed
+          const uploadResult = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+              {
+                folder: 'project-matchmaker-chat',
+                resource_type: 'image',
+              },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+              }
+            );
+            uploadStream.end(req.file.buffer);
           });
-          imageUrl = result.secure_url;
-          
-          // Optionally delete the local file after successful Cloudinary upload
-          fs.unlink(req.file.path, (err) => {
-            if (err) console.error('Error deleting local file:', err);
-          });
+
+          return res.json({ success: true, imageUrl: uploadResult.secure_url });
         } catch (cloudinaryErr) {
-          console.error('Cloudinary Upload Error (Falling back to local disk storage):', cloudinaryErr);
-          // We don't delete the local file here, so it continues serving locally.
+          console.error('Cloudinary Upload Error:', cloudinaryErr);
+          if (process.env.NODE_ENV === 'production') {
+            return res.status(500).json({ error: 'Image upload failed. Cloudinary is required in production.' });
+          }
         }
       }
 
-      return res.json({ success: true, imageUrl });
+      // Local dev fallback: return the file as a base64 data URL
+      const base64 = req.file.buffer.toString('base64');
+      const dataUrl = `data:${req.file.mimetype};base64,${base64}`;
+      return res.json({ success: true, imageUrl: dataUrl });
     } catch (error) {
       console.error('File Upload Error:', error);
       return res.status(500).json({ error: error.message || 'File upload failed' });
