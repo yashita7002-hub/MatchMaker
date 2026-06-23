@@ -12,10 +12,10 @@ export async function getRecommendations(
   requiredRoles: string[],
   excludeUserIds: string[]
 ): Promise<IMatchResult[]> {
-  // Convert string IDs to mongoose ObjectIds for safety
+  
   const excludeObjectIds = excludeUserIds.map(id => new mongoose.Types.ObjectId(id));
   
-  // Fetch all users in database who are NOT excluded
+
   const candidates = await User.find({ _id: { $nin: excludeObjectIds } });
   
   const results: IMatchResult[] = [];
@@ -27,7 +27,7 @@ export async function getRecommendations(
     let score = 0;
     const reasons: string[] = [];
     
-    // 1. Skills Match (35%)
+ 
     const candSkillsLower = candidate.skills.map(s => s.toLowerCase().trim());
     const matchedSkills = reqSkillsLower.filter(s => candSkillsLower.includes(s));
     
@@ -38,10 +38,10 @@ export async function getRecommendations(
         reasons.push(`Matches ${matchedSkills.length}/${requiredSkills.length} skills: ${matchedSkills.join(', ')}`);
       }
     } else {
-      score += 35; // If no skills required, full marks
+      score += 35; 
     }
 
-    // 2. Roles Match (25%)
+    
     const candRolesLower = candidate.roles.map(r => r.toLowerCase().trim());
     const matchedRoles = reqRolesLower.filter(r => candRolesLower.includes(r));
     
@@ -54,7 +54,7 @@ export async function getRecommendations(
       score += 25;
     }
 
-    // 3. Repository Analysis (20%)
+    
     let matchingReposCount = 0;
     if (candidate.repositories && candidate.repositories.length > 0) {
       for (const repo of candidate.repositories) {
@@ -62,9 +62,9 @@ export async function getRecommendations(
         const repoNameLower = repo.name.toLowerCase();
         const repoDescLower = repo.description ? repo.description.toLowerCase() : '';
         
-        // Check if repo language matches any required skills
+        
         const langMatches = reqSkillsLower.includes(repoLangLower);
-        // Check if repo name or desc matches required skills
+        
         const descMatches = reqSkillsLower.some(skill => 
           repoNameLower.includes(skill) || repoDescLower.includes(skill)
         );
@@ -74,7 +74,7 @@ export async function getRecommendations(
         }
       }
       
-      const repoRatio = Math.min(matchingReposCount / 3, 1); // Cap at 3 repos for max points
+      const repoRatio = Math.min(matchingReposCount / 3, 1); 
       const repoScore = repoRatio * 20;
       score += repoScore;
       if (matchingReposCount > 0) {
@@ -82,7 +82,7 @@ export async function getRecommendations(
       }
     }
 
-    // 4. Availability Status (10%)
+    
     if (candidate.status === 'Looking for Team') {
       score += 10;
       reasons.push('Actively looking for a team!');
@@ -96,7 +96,7 @@ export async function getRecommendations(
       score += 0;
     }
 
-    // 5. Trust / Review Score (10%)
+    
     if (candidate.trustScore > 0) {
       const ratingScore = (candidate.trustScore / 5) * 10;
       score += ratingScore;
@@ -104,7 +104,7 @@ export async function getRecommendations(
         reasons.push(`High Trust Score: ${candidate.trustScore.toFixed(1)}/5.0`);
       }
     } else {
-      score += 8; // Default neutral score
+      score += 8; 
       reasons.push('New teammate (clean record)');
     }
 
@@ -117,6 +117,6 @@ export async function getRecommendations(
     });
   }
 
-  // Sort candidates by match score descending
+  
   return results.sort((a, b) => b.matchScore - a.matchScore);
 }

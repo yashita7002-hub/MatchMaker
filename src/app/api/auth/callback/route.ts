@@ -15,7 +15,7 @@ export async function GET(req: Request) {
   const clientSecret = process.env.GITHUB_CLIENT_SECRET;
   
   try {
-    // Exchange code for token
+    
     const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
       headers: {
@@ -36,7 +36,7 @@ export async function GET(req: Request) {
       return NextResponse.redirect(`${origin}/login?error=invalid_token`);
     }
     
-    // Fetch user profile
+    
     const userRes = await fetch('https://api.github.com/user', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -45,7 +45,7 @@ export async function GET(req: Request) {
     });
     const userData = await userRes.json();
     
-    // Fetch user repos
+    
     const reposRes = await fetch('https://api.github.com/user/repos?sort=updated&per_page=8', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -69,7 +69,7 @@ export async function GET(req: Request) {
     let user = await User.findOne({ githubUsername: userData.login });
     
     if (!user) {
-      // Assign initial mockup skills based on their repos
+      
       const initialSkills = Array.from(new Set([
         ...repositories.map((r: any) => r.language).filter(Boolean),
         'React',
@@ -96,7 +96,7 @@ export async function GET(req: Request) {
         },
       });
     } else {
-      // Update repositories list and basic info on every login
+      
       user.name = userData.name || user.name;
       user.avatarUrl = userData.avatar_url || user.avatarUrl;
       user.bio = userData.bio || user.bio;

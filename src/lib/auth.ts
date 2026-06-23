@@ -2,9 +2,10 @@ import connectDB from './db';
 import User from '@/models/User';
 
 export async function getSessionUser(req: Request) {
+  console.log(process.env.MONGODB_URI);
   await connectDB();
   
-  // Extract cookie
+  
   const cookieHeader = req.headers.get('cookie') || '';
   const match = cookieHeader.match(/session_user_id=([^;]+)/);
   if (!match) return null;
@@ -19,7 +20,7 @@ export async function getSessionUser(req: Request) {
 }
 
 export function serializeSessionCookie(userId: string): string {
-  // HttpOnly, Path=/, Max-Age=7 days, SameSite=Lax
+ 
   return `session_user_id=${userId}; HttpOnly; Path=/; Max-Age=${60 * 60 * 24 * 7}; SameSite=Lax`;
 }
 

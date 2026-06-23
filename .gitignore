@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/socket-server/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -31,11 +32,21 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
-
+.env
+.env.local
+.socket-server
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# socket-server uploads (user-uploaded files)
+/socket-server/uploads/
+
+src/app/dashboard
+src/app/lo
+src/components
+src/context
+

@@ -62,7 +62,7 @@ export default function Login() {
           </div>
         )}
 
-        {/* Real GitHub OAuth Login Button */}
+      
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <a href="/api/auth/login" className="btn-primary" style={{ justifyContent: 'center', padding: '12px' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -78,7 +78,7 @@ export default function Login() {
           <hr style={{ flex: 1, border: 'none', borderTop: '1px solid var(--border-glass)' }} />
         </div>
 
-        {/* Developer Mock Username Login */}
+        {}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div className="form-group">
             <label className="form-label">Enter any GitHub Username</label>
@@ -102,7 +102,7 @@ export default function Login() {
           </div>
         </form>
 
-        {/* Quick Mock Personas Selector */}
+       
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Quick select a tester persona:</span>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>

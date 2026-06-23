@@ -38,15 +38,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
-  // Load theme and session on mount
+  
   useEffect(() => {
-    // 1. Theme initialization
+    
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
     const initialTheme = savedTheme || 'dark';
     setTheme(initialTheme);
     document.documentElement.setAttribute('data-theme', initialTheme);
     
-    // 2. Auth session check
+    
     refreshUser();
   }, []);
 
