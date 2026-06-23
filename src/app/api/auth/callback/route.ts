@@ -38,6 +38,7 @@ export async function GET(req: Request) {
         client_id: clientId,
         client_secret: clientSecret,
         code,
+        redirect_uri: `${baseUrl}/api/auth/callback`,
       }),
     });
     
