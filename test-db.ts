@@ -10,7 +10,8 @@ async function test() {
     console.log('uri2 connection SUCCESS!');
     process.exit(0);
   } catch (err) {
-    console.error('uri2 connection FAILED:', err.message);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('uri2 connection FAILED:', message);
   }
 }
 test();
