@@ -8,7 +8,7 @@ export async function GET(req: Request) {
   const code = searchParams.get('code');
   
   if (!code) {
-    return NextResponse.redirect(`${origin}/login?error=no_code`);
+    return NextResponse.redirect(`${process.env.BASE_URL}/login?error=no_code`);
   }
   
   const clientId = process.env.GITHUB_CLIENT_ID;

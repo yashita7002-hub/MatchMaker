@@ -7,7 +7,7 @@ export async function GET(req: Request) {
 
     if (!clientId) {
       return NextResponse.redirect(
-        `${origin}/login?error=oauth_not_configured`
+        `${process.env.BASE_URL}/login?error=oauth_not_configured`
       );
     }
 
