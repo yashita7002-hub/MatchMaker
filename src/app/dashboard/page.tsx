@@ -389,7 +389,7 @@ export default function Dashboard() {
                 {recommendations.slice(0, 5).map(rec => {
                   const status = inviteStatusMap[rec.candidate._id] || 'idle';
                   return (
-                    <div key={rec.candidate._id} style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyBetween: 'space-between', alignItems: 'flex-start', background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-glass)' }}>
+                    <div key={rec.candidate._id} style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'space-between', alignItems: 'flex-start', background: 'rgba(255,255,255,0.02)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-glass)' }}>
                       
                       {}
                       <div style={{ display: 'flex', gap: '14px', flex: 1, minWidth: '280px' }}>
