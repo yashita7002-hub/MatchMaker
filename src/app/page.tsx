@@ -246,7 +246,7 @@ export default function Home() {
                   key={project._id}
                   onClick={() => setSelectedProject(project)}
                   className="glass-panel-interactive"
-                  style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyBetween: 'space-between', gap: '16px' }}
+                  style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '16px' }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <span className="badge" style={{
@@ -395,7 +395,7 @@ export default function Home() {
               </svg>
             </button>
 
-            <div style={{ display: 'flex', justifyBetween: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
               <span className="badge" style={{ background: 'rgba(99,102,241,0.1)', color: 'var(--accent-color)', border: '1px solid var(--border-glass)' }}>{selectedProject.category}</span>
               <span className={`badge badge-${selectedProject.status.toLowerCase()}`}>{selectedProject.status}</span>
             </div>
