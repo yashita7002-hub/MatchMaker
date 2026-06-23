@@ -29,6 +29,13 @@ app.prepare().then(() => {
       api_key: process.env.CLOUDINARY_API_KEY,
       api_secret: process.env.CLOUDINARY_API_SECRET,
     });
+    console.log(`Cloudinary configured: cloud_name=${process.env.CLOUDINARY_CLOUD_NAME}, api_key=${process.env.CLOUDINARY_API_KEY?.slice(0, 4)}...`);
+  } else {
+    console.warn('Cloudinary NOT configured. Missing env vars:', {
+      CLOUDINARY_CLOUD_NAME: !!process.env.CLOUDINARY_CLOUD_NAME,
+      CLOUDINARY_API_KEY: !!process.env.CLOUDINARY_API_KEY,
+      CLOUDINARY_API_SECRET: !!process.env.CLOUDINARY_API_SECRET,
+    });
   }
 
   // Multer Memory Storage - keeps file in RAM, not on disk (works on Railway's ephemeral FS)

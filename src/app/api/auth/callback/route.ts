@@ -3,12 +3,24 @@ import connectDB from '@/lib/db';
 import User from '@/models/User';
 import { serializeSessionCookie } from '@/lib/auth';
 
+function getBaseUrl(req: Request): string {
+  // 1. Prefer explicit BASE_URL env var (set on Railway)
+  if (process.env.BASE_URL) return process.env.BASE_URL.replace(/\/$/, '');
+  // 2. Fall back to reverse-proxy forwarded headers
+  const proto = req.headers.get('x-forwarded-proto') || 'https';
+  const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
+  if (host) return `${proto}://${host}`;
+  // 3. Last resort: origin from URL (will be localhost behind proxy)
+  return new URL(req.url).origin;
+}
+
 export async function GET(req: Request) {
-  const { searchParams, origin } = new URL(req.url);
+  const { searchParams } = new URL(req.url);
   const code = searchParams.get('code');
+  const baseUrl = getBaseUrl(req);
   
   if (!code) {
-    return NextResponse.redirect(`${process.env.BASE_URL}/login?error=no_code`);
+    return NextResponse.redirect(`${baseUrl}/login?error=no_code`);
   }
   
   const clientId = process.env.GITHUB_CLIENT_ID;
@@ -33,7 +45,7 @@ export async function GET(req: Request) {
     const accessToken = tokenData.access_token;
     
     if (!accessToken) {
-      return NextResponse.redirect(`${origin}/login?error=invalid_token`);
+      return NextResponse.redirect(`${baseUrl}/login?error=invalid_token`);
     }
     
     
@@ -104,11 +116,11 @@ export async function GET(req: Request) {
       await user.save();
     }
     
-    const response = NextResponse.redirect(`${origin}/dashboard`);
+    const response = NextResponse.redirect(`${baseUrl}/dashboard`);
     response.headers.set('Set-Cookie', serializeSessionCookie(user._id.toString()));
     return response;
   } catch (error) {
     console.error('OAuth Callback Error:', error);
-    return NextResponse.redirect(`${origin}/login?error=oauth_failed`);
+    return NextResponse.redirect(`${baseUrl}/login?error=oauth_failed`);
   }
 }

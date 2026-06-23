@@ -20,8 +20,8 @@ export async function getSessionUser(req: Request) {
 }
 
 export function serializeSessionCookie(userId: string): string {
- 
-  return `session_user_id=${userId}; HttpOnly; Path=/; Max-Age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+  const isProduction = process.env.NODE_ENV === 'production';
+  return `session_user_id=${userId}; HttpOnly; Path=/; Max-Age=${60 * 60 * 24 * 7}; SameSite=Lax${isProduction ? '; Secure' : ''}`;
 }
 
 export function serializeClearCookie(): string {
