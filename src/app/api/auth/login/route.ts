@@ -1,28 +1,17 @@
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
-  try {
-    const clientId = process.env.GITHUB_CLIENT_ID;
-    const origin = new URL(req.url).origin;
+  const clientId = process.env.GITHUB_CLIENT_ID;
 
-    if (!clientId) {
-      return NextResponse.redirect(
-        `${process.env.BASE_URL}/login?error=oauth_not_configured`
-      );
-    }
+  const origin = new URL(req.url).origin;
 
-    const githubAuthUrl =
-      `https://github.com/login/oauth/authorize` +
-      `?client_id=${clientId}` +
-      `&scope=read:user,user:email`;
+  const githubAuthUrl =
+    `https://github.com/login/oauth/authorize` +
+    `?client_id=${clientId}` +
+    `&redirect_uri=${encodeURIComponent(
+      `${process.env.BASE_URL}/api/auth/callback`
+    )}` +
+    `&scope=read:user user:email repo`;
 
-    return NextResponse.redirect(githubAuthUrl);
-  } catch (error) {
-    console.error("Login route error:", error);
-
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+  return NextResponse.redirect(githubAuthUrl);
 }
