@@ -45,8 +45,8 @@ next-env.d.ts
 # socket-server uploads (user-uploaded files)
 /socket-server/uploads/
 
-src/app/dashboard
-src/app/lo
-src/components
-src/context
+strip-comments.js
+test-upload.js
+verify-db.ts
 
+.env.example
