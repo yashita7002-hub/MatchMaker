@@ -86,6 +86,42 @@ app.prepare().then(() => {
     }
   });
 
+  // Diagnostic endpoint: test Cloudinary connectivity (remove after debugging)
+  server.get('/api/test-cloudinary', async (req, res) => {
+    if (!hasCloudinary) {
+      return res.json({ error: 'Cloudinary not configured', env: {
+        CLOUDINARY_CLOUD_NAME: !!process.env.CLOUDINARY_CLOUD_NAME,
+        CLOUDINARY_API_KEY: !!process.env.CLOUDINARY_API_KEY,
+        CLOUDINARY_API_SECRET: !!process.env.CLOUDINARY_API_SECRET,
+      }});
+    }
+    try {
+      // Upload a tiny 1x1 transparent PNG to test connectivity
+      const testBuffer = Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+        'base64'
+      );
+      const result = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: 'test', resource_type: 'image' },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(testBuffer);
+      });
+      return res.json({ success: true, url: result.secure_url });
+    } catch (err) {
+      return res.status(500).json({
+        error: err.message,
+        http_code: err.http_code,
+        name: err.name,
+        full: JSON.stringify(err, null, 2),
+      });
+    }
+  });
+
   // Handle all other requests with Next.js
   server.use((req, res) => {
     return handle(req, res);
