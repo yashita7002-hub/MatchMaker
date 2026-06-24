@@ -39,6 +39,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       
       const isMember = project.members.some(m => m.toString() === application.userId.toString());
       if (!isMember) {
+        if (project.members.length >= project.maxTeamSize) {
+          return NextResponse.json({ error: 'Cannot accept application. Team is already at maximum capacity.' }, { status: 400 });
+        }
+        
         project.members.push(application.userId);
         
         

@@ -32,6 +32,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: 'User is already a team member' }, { status: 400 });
     }
     
+    if (project.members.length >= project.maxTeamSize) {
+      return NextResponse.json({ error: 'Team is already at maximum capacity' }, { status: 400 });
+    }
+    
     
     const existingInvite = await Invitation.findOne({
       projectId: project._id,
