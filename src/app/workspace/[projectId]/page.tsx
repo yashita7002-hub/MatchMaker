@@ -455,47 +455,60 @@ export default function WorkspaceHub() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '100px', color: 'var(--text-secondary)' }}>
-        Loading team collaboration hub...
+      <div className="flex-1 flex items-center justify-center py-32 text-indigo-400">
+        <div className="flex flex-col items-center gap-4">
+          <svg className="animate-spin h-12 w-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span className="text-slate-400 text-sm">Loading team collaboration hub...</span>
+        </div>
       </div>
     );
   }
 
   if (forbidden || !project) {
     return (
-      <div style={{ textAlign: 'center', padding: '100px', maxWidth: '500px', margin: '0 auto' }}>
-        <div className="glass-panel" style={{ padding: '32px' }}>
-          <h2 style={{ color: 'var(--danger)', marginBottom: '16px' }}>Access Forbidden</h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>You are not authorized to view this private workspace. Hub workspace access is restricted to accepted team members only.</p>
-          <Link href="/dashboard" className="btn-primary">Back to Dashboard</Link>
+      <div className="flex-1 flex items-center justify-center py-20 px-6">
+        <div className="glass-card w-full max-w-md p-10 text-center flex flex-col items-center gap-6">
+          <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/30">
+            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-heading font-bold text-red-400">Access Forbidden</h2>
+          <p className="text-slate-400">You are not authorized to view this private workspace. Access is restricted to accepted team members only.</p>
+          <Link href="/dashboard" className="btn-primary w-full justify-center">Back to Dashboard</Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ flex: 1, padding: '24px', maxWidth: '1200px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="flex-1 w-full max-w-7xl mx-auto px-6 py-8 flex flex-col gap-6 relative">
       
       {}
-      <div className="glass-panel" style={{ padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-        <div>
-          <span style={{ fontSize: '0.8rem', color: 'var(--accent-color)', fontWeight: 600 }}>PRIVATE WORKSPACE HUB</span>
-          <h1 style={{ fontSize: '1.8rem', marginTop: '2px' }}>{project.title}</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Teammates: {project.members.map(m => m.name).join(', ')}</p>
+      <div className="glass-panel rounded-2xl p-6 flex justify-between items-center flex-wrap gap-5">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Private Workspace Hub</span>
+          <h1 className="text-2xl font-heading font-extrabold text-white">{project.title}</h1>
+          <p className="text-sm text-slate-400">Teammates: {project.members.map(m => m.name).join(', ')}</p>
         </div>
-
-        {}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span className={`badge badge-${project.status.toLowerCase()}`}>{project.status}</span>
-          
+        <div className="flex items-center gap-3">
+          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
+            project.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' :
+            project.status === 'Completed' ? 'bg-purple-500/10 text-purple-400 border-purple-500/30' :
+            project.status === 'Archived' ? 'bg-slate-500/10 text-slate-400 border-slate-500/30' :
+            'bg-blue-500/10 text-blue-400 border-blue-500/30'
+          }`}>{project.status}</span>
           {user?._id === project.ownerId._id && project.status !== 'Completed' && project.status !== 'Archived' && (
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="flex gap-2">
               {project.status === 'Active' && (
-                <button onClick={() => handleUpdateProjectStatus('Completed')} className="btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem', background: 'var(--success)', boxShadow: 'none' }}>
+                <button onClick={() => handleUpdateProjectStatus('Completed')} className="px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/30 transition-colors">
                   Mark Completed
                 </button>
               )}
-              <button onClick={() => handleUpdateProjectStatus('Archived')} className="btn-secondary" style={{ padding: '6px 12px', fontSize: '0.8rem' }}>
+              <button onClick={() => handleUpdateProjectStatus('Archived')} className="btn-secondary !py-1.5 !px-3 !text-xs">
                 Archive
               </button>
             </div>
@@ -504,28 +517,39 @@ export default function WorkspaceHub() {
       </div>
 
       {}
-      <div className="glass-panel" style={{ padding: '8px', display: 'flex', gap: '8px', overflowX: 'auto' }}>
-        <button onClick={() => { setActiveTab('chat'); setSelectedThread(null); }} className={activeTab === 'chat' ? 'btn-primary' : 'btn-secondary'} style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
-          Team Chat
-        </button>
-        <button onClick={() => { setActiveTab('kanban'); setSelectedThread(null); }} className={activeTab === 'kanban' ? 'btn-primary' : 'btn-secondary'} style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
-          Kanban Board
-        </button>
-        <button onClick={() => { setActiveTab('discussions'); setSelectedThread(null); }} className={activeTab === 'discussions' ? 'btn-primary' : 'btn-secondary'} style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
-          Discussions
-        </button>
-        <button onClick={() => { setActiveTab('expenses'); setSelectedThread(null); }} className={activeTab === 'expenses' ? 'btn-primary' : 'btn-secondary'} style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
-          Expenses (${totalExpenseSum})
-        </button>
+      <div className="glass-panel rounded-2xl p-2 flex gap-2 overflow-x-auto">
+        {(['chat', 'kanban', 'discussions', 'expenses'] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => { setActiveTab(tab); setSelectedThread(null); }}
+            className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap ${
+              activeTab === tab
+                ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)]'
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            {tab === 'chat' ? '💬 Team Chat' :
+             tab === 'kanban' ? '📋 Kanban Board' :
+             tab === 'discussions' ? '🗣️ Discussions' :
+             `💰 Expenses ($${totalExpenseSum})`}
+          </button>
+        ))}
         {project.status === 'Completed' && (
-          <button onClick={() => { setActiveTab('reviews'); setSelectedThread(null); }} className={activeTab === 'reviews' ? 'btn-primary' : 'btn-secondary'} style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
-            Review Teammates
+          <button
+            onClick={() => { setActiveTab('reviews'); setSelectedThread(null); }}
+            className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap ${
+              activeTab === 'reviews'
+                ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)]'
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            ⭐ Review Teammates
           </button>
         )}
       </div>
 
       {}
-      <div className="glass-panel" style={{ flex: 1, minHeight: '520px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div className="glass-panel rounded-2xl flex-1 min-h-[520px] flex flex-col overflow-hidden">
         
         {}
         {activeTab === 'chat' && (

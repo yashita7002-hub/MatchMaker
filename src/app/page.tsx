@@ -37,7 +37,6 @@ export default function Home() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   
-  
   const [showPitchModal, setShowPitchModal] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -48,7 +47,6 @@ export default function Home() {
   const [submitting, setSubmitting] = useState(false);
   const [pitchError, setPitchError] = useState('');
 
-  
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [appRole, setAppRole] = useState('');
   const [appCover, setAppCover] = useState('');
@@ -111,7 +109,6 @@ export default function Home() {
 
       const data = await res.json();
       if (res.ok) {
-        
         setTitle('');
         setDescription('');
         setSkillsStr('');
@@ -161,20 +158,34 @@ export default function Home() {
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'recruiting': return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
+      case 'active': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+      case 'completed': return 'bg-purple-500/10 text-purple-400 border-purple-500/30';
+      case 'archived': return 'bg-slate-500/10 text-slate-400 border-slate-500/30';
+      default: return 'bg-slate-500/10 text-slate-400 border-slate-500/30';
+    }
+  };
+
   return (
-    <div style={{ flex: 1, padding: '40px 24px', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
-      {}
-      <div style={{ textAlign: 'center', marginBottom: '48px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 800 }}>
+    <div className="flex-1 w-full max-w-7xl mx-auto px-6 py-12 lg:py-20 flex flex-col gap-16 relative">
+      {/* Background Decor */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none -z-10" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[40%] bg-purple-600/20 rounded-full blur-[100px] pointer-events-none -z-10" />
+
+      {/* Hero Section */}
+      <div className="text-center flex flex-col gap-6 items-center max-w-3xl mx-auto">
+        <h1 className="font-heading text-5xl md:text-6xl font-extrabold tracking-tight">
           Find the Perfect <span className="text-gradient">Team Members</span>
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', maxWidth: '640px', margin: '0 auto' }}>
+        <p className="text-slate-400 text-lg md:text-xl leading-relaxed">
           Pitch project ideas, find matching candidates, collaborate on hackathons or college projects, and build a trusted developers network.
         </p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '12px' }}>
+        <div className="flex flex-wrap justify-center gap-4 mt-6">
           {user ? (
-            <button onClick={() => setShowPitchModal(true)} className="btn-primary">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <button onClick={() => setShowPitchModal(true)} className="btn-primary group">
+              <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                 <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
               </svg>
               Pitch an Idea
@@ -188,25 +199,26 @@ export default function Home() {
         </div>
       </div>
 
-      <div id="discover" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        {}
-        <div className="glass-panel" style={{ padding: '16px 24px', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
-          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '8px', flex: 1, minWidth: '280px' }}>
+      <div id="discover" className="flex flex-col gap-8">
+        {/* Filters & Search */}
+        <div className="glass-panel rounded-2xl p-6 flex flex-wrap lg:flex-nowrap justify-between items-center gap-6">
+          <form onSubmit={handleSearchSubmit} className="flex gap-3 flex-1 min-w-[300px]">
             <input
               type="text"
               placeholder="Search projects, skills, descriptions..."
-              className="form-input"
+              className="flex-1 bg-slate-900/50 border border-white/10 text-white px-4 py-3 rounded-xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-slate-500"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ flex: 1 }}
             />
-            <button type="submit" className="btn-secondary">Search</button>
+            <button type="submit" className="btn-secondary !px-6">Search</button>
           </form>
 
-          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Category:</span>
-              <select className="form-select" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+          <div className="flex gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-slate-400">Category:</span>
+              <select className="bg-slate-900/50 border border-white/10 text-white px-4 py-3 rounded-xl outline-none focus:border-indigo-500 cursor-pointer appearance-none pr-10" 
+                      style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px top 50%', backgroundSize: '12px auto' }}
+                      value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
                 <option value="All">All Categories</option>
                 <option value="Hackathon">Hackathon</option>
                 <option value="College Project">College Project</option>
@@ -215,9 +227,11 @@ export default function Home() {
               </select>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Status:</span>
-              <select className="form-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-slate-400">Status:</span>
+              <select className="bg-slate-900/50 border border-white/10 text-white px-4 py-3 rounded-xl outline-none focus:border-indigo-500 cursor-pointer appearance-none pr-10"
+                      style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px top 50%', backgroundSize: '12px auto' }}
+                      value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                 <option value="All">All Statuses</option>
                 <option value="Recruiting">Recruiting</option>
                 <option value="Active">Active</option>
@@ -228,129 +242,127 @@ export default function Home() {
           </div>
         </div>
 
-        {}
+        {/* Project Grid */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-secondary)' }}>
-            Loading projects matching your interests...
+          <div className="flex justify-center items-center py-20 text-indigo-400">
+            <svg className="animate-spin h-10 w-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
           </div>
         ) : projects.length === 0 ? (
-          <div className="glass-panel" style={{ textAlign: 'center', padding: '60px', color: 'var(--text-secondary)' }}>
-            No projects found. Try adjusting your search query or filters.
+          <div className="glass-panel rounded-2xl text-center py-24 text-slate-400 flex flex-col items-center gap-4">
+            <svg className="w-16 h-16 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+            </svg>
+            <span className="text-lg">No projects found. Try adjusting your search query or filters.</span>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '24px' }}>
-            {projects.map((project) => {
-              const statusLower = project.status.toLowerCase();
-              return (
-                <div
-                  key={project._id}
-                  onClick={() => setSelectedProject(project)}
-                  className="glass-panel-interactive"
-                  style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '16px' }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <span className="badge" style={{
-                      background: `rgba(99, 102, 241, 0.1)`,
-                      color: `var(--accent-color)`,
-                      border: '1px solid var(--border-glass)'
-                    }}>{project.category}</span>
-                    <span className={`badge badge-${statusLower}`}>{project.status}</span>
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.map((project) => (
+              <div
+                key={project._id}
+                onClick={() => setSelectedProject(project)}
+                className="glass-card p-6 flex flex-col justify-between gap-5 cursor-pointer group"
+              >
+                {/* Header */}
+                <div className="flex justify-between items-start">
+                  <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                    {project.category}
+                  </span>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${getStatusColor(project.status)}`}>
+                    {project.status}
+                  </span>
+                </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <h3 style={{ fontSize: '1.25rem' }}>{project.title}</h3>
-                    <p style={{
-                      color: 'var(--text-secondary)',
-                      fontSize: '0.9rem',
-                      lineHeight: '1.45',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden'
-                    }}>{project.description}</p>
-                  </div>
+                {/* Content */}
+                <div className="flex flex-col gap-3">
+                  <h3 className="text-xl font-heading font-bold group-hover:text-indigo-300 transition-colors line-clamp-1">{project.title}</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed line-clamp-3">
+                    {project.description}
+                  </p>
+                </div>
 
-                  {}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {project.requiredSkills.length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {project.requiredSkills.map(skill => (
-                          <span key={skill} style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'var(--text-secondary)' }}>
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    {project.requiredRoles.length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {project.requiredRoles.map(role => (
-                          <span key={role} style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '4px', background: 'rgba(139,92,246,0.08)', color: 'var(--accent-color)', fontWeight: 600 }}>
-                            {role}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <hr style={{ border: 'none', borderTop: '1px solid var(--border-glass)' }} />
-
-                  {}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <img src={project.ownerId.avatarUrl} alt={project.ownerId.name} style={{ width: '28px', height: '28px', borderRadius: '50%' }} />
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontWeight: 600 }}>{project.ownerId.name}</span>
-                        <TrustStars score={project.ownerId.trustScore} max={5} />
-                      </div>
+                {/* Tags */}
+                <div className="flex flex-col gap-3 mt-2">
+                  {project.requiredSkills.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {project.requiredSkills.slice(0, 4).map(skill => (
+                        <span key={skill} className="text-xs px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-slate-300">
+                          {skill}
+                        </span>
+                      ))}
+                      {project.requiredSkills.length > 4 && <span className="text-xs px-2 py-1 text-slate-500">+{project.requiredSkills.length - 4}</span>}
                     </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-secondary)' }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
-                      </svg>
-                      <span>{project.members.length}/{project.maxTeamSize}</span>
+                  )}
+                  {project.requiredRoles.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {project.requiredRoles.slice(0, 3).map(role => (
+                        <span key={role} className="text-xs px-2.5 py-1 rounded-md bg-purple-500/10 text-purple-300 font-medium">
+                          {role}
+                        </span>
+                      ))}
                     </div>
+                  )}
+                </div>
+
+                <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-1" />
+
+                {/* Footer */}
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <img src={project.ownerId.avatarUrl} alt={project.ownerId.name} className="w-8 h-8 rounded-full border border-white/20" />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold">{project.ownerId.name}</span>
+                      <TrustStars score={project.ownerId.trustScore} max={5} />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-slate-400 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
+                    </svg>
+                    <span className="text-xs font-bold">{project.members.length}/{project.maxTeamSize}</span>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>
 
-      {}
+      {/* Pitch Modal */}
       {showPitchModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '600px', padding: '32px', position: 'relative', display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <button onClick={() => setShowPitchModal(false)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+          <div className="glass-panel w-full max-w-2xl rounded-2xl p-8 relative flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
+            <button onClick={() => setShowPitchModal(false)} className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors">
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
 
-            <h2>Pitch a New Project Idea</h2>
+            <h2 className="text-2xl font-heading font-bold text-white">Pitch a New Project Idea</h2>
 
             {pitchError && (
-              <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid var(--danger)', padding: '10px 14px', borderRadius: '6px', color: '#f87171', fontSize: '0.85rem' }}>
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl text-sm">
                 {pitchError}
               </div>
             )}
 
-            <form onSubmit={handleCreateProject} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div className="form-group">
-                <label className="form-label">Project Title *</label>
-                <input type="text" className="form-input" placeholder="e.g. AI-Powered study planner" value={title} onChange={(e) => setTitle(e.target.value)} required />
+            <form onSubmit={handleCreateProject} className="flex flex-col gap-5">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-slate-400">Project Title *</label>
+                <input type="text" className="bg-slate-900/50 border border-white/10 text-white px-4 py-3 rounded-xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20" placeholder="e.g. AI-Powered study planner" value={title} onChange={(e) => setTitle(e.target.value)} required />
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Description *</label>
-                <textarea className="form-textarea" rows={4} placeholder="Describe the problem you are solving, target users, and technology stack..." value={description} onChange={(e) => setDescription(e.target.value)} required />
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-slate-400">Description *</label>
+                <textarea className="bg-slate-900/50 border border-white/10 text-white px-4 py-3 rounded-xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20" rows={4} placeholder="Describe the problem you are solving, target users, and technology stack..." value={description} onChange={(e) => setDescription(e.target.value)} required />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="form-group">
-                  <label className="form-label">Category</label>
-                  <select className="form-select" value={category} onChange={(e) => setCategory(e.target.value)}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium text-slate-400">Category</label>
+                  <select className="bg-slate-900/50 border border-white/10 text-white px-4 py-3 rounded-xl outline-none focus:border-indigo-500" value={category} onChange={(e) => setCategory(e.target.value)}>
                     <option value="College Project">College Project</option>
                     <option value="Hackathon">Hackathon</option>
                     <option value="Startup">Startup</option>
@@ -358,23 +370,23 @@ export default function Home() {
                   </select>
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Max Team Size *</label>
-                  <input type="number" min="2" max="20" className="form-input" value={maxTeamSize} onChange={(e) => setMaxTeamSize(e.target.value)} required />
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium text-slate-400">Max Team Size *</label>
+                  <input type="number" min="2" max="20" className="bg-slate-900/50 border border-white/10 text-white px-4 py-3 rounded-xl outline-none focus:border-indigo-500" value={maxTeamSize} onChange={(e) => setMaxTeamSize(e.target.value)} required />
                 </div>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Required Skills (comma-separated)</label>
-                <input type="text" className="form-input" placeholder="e.g. React, Mongoose, Python, CSS" value={skillsStr} onChange={(e) => setSkillsStr(e.target.value)} />
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-slate-400">Required Skills (comma-separated)</label>
+                <input type="text" className="bg-slate-900/50 border border-white/10 text-white px-4 py-3 rounded-xl outline-none focus:border-indigo-500" placeholder="e.g. React, Node.js, Python" value={skillsStr} onChange={(e) => setSkillsStr(e.target.value)} />
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Required Roles (comma-separated)</label>
-                <input type="text" className="form-input" placeholder="e.g. Frontend Developer, UI Designer" value={rolesStr} onChange={(e) => setRolesStr(e.target.value)} />
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-slate-400">Required Roles (comma-separated)</label>
+                <input type="text" className="bg-slate-900/50 border border-white/10 text-white px-4 py-3 rounded-xl outline-none focus:border-indigo-500" placeholder="e.g. Frontend Developer, UI Designer" value={rolesStr} onChange={(e) => setRolesStr(e.target.value)} />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '12px' }}>
+              <div className="flex justify-end gap-3 mt-4">
                 <button type="button" onClick={() => setShowPitchModal(false)} className="btn-secondary">Cancel</button>
                 <button type="submit" className="btn-primary" disabled={submitting}>
                   {submitting ? 'Creating...' : 'Submit Pitch'}
@@ -385,52 +397,58 @@ export default function Home() {
         </div>
       )}
 
-      {}
+      {/* Project Details Modal */}
       {selectedProject && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '680px', padding: '32px', position: 'relative', display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <button onClick={() => setSelectedProject(null)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+          <div className="glass-panel w-full max-w-3xl rounded-2xl p-8 relative flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
+            <button onClick={() => setSelectedProject(null)} className="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors">
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-              <span className="badge" style={{ background: 'rgba(99,102,241,0.1)', color: 'var(--accent-color)', border: '1px solid var(--border-glass)' }}>{selectedProject.category}</span>
-              <span className={`badge badge-${selectedProject.status.toLowerCase()}`}>{selectedProject.status}</span>
+            <div className="flex flex-wrap gap-3 items-center">
+              <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                {selectedProject.category}
+              </span>
+              <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${getStatusColor(selectedProject.status)}`}>
+                {selectedProject.status}
+              </span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <h2 style={{ fontSize: '1.75rem' }}>{selectedProject.title}</h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            <div className="flex flex-col gap-2">
+              <h2 className="text-3xl font-heading font-bold text-white leading-tight">{selectedProject.title}</h2>
+              <div className="flex items-center gap-2 text-sm text-slate-400">
                 <span>Created by:</span>
-                <img src={selectedProject.ownerId.avatarUrl} alt={selectedProject.ownerId.name} style={{ width: '20px', height: '20px', borderRadius: '50%' }} />
-                <span style={{ fontWeight: 600 }}>{selectedProject.ownerId.name}</span>
+                <img src={selectedProject.ownerId.avatarUrl} alt={selectedProject.ownerId.name} className="w-6 h-6 rounded-full border border-white/10" />
+                <span className="font-semibold text-slate-200">{selectedProject.ownerId.name}</span>
                 <TrustStars score={selectedProject.ownerId.trustScore} />
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <h4 style={{ color: 'var(--text-secondary)' }}>Description</h4>
-              <p style={{ color: 'var(--text-primary)', lineHeight: '1.6', whiteSpace: 'pre-line' }}>{selectedProject.description}</p>
+            <div className="flex flex-col gap-3">
+              <h4 className="text-slate-400 font-semibold uppercase tracking-wider text-sm">Description</h4>
+              <p className="text-slate-200 leading-relaxed whitespace-pre-line bg-white/5 p-5 rounded-xl border border-white/5">
+                {selectedProject.description}
+              </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', flexWrap: 'wrap' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <div>
-                <h4 style={{ color: 'var(--text-secondary)', marginBottom: '8px' }}>Required Skills</h4>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                <h4 className="text-slate-400 font-semibold uppercase tracking-wider text-sm mb-3">Required Skills</h4>
+                <div className="flex flex-wrap gap-2">
                   {selectedProject.requiredSkills.map(skill => (
-                    <span key={skill} style={{ fontSize: '0.8rem', padding: '4px 10px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)' }}>
+                    <span key={skill} className="text-sm px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-200">
                       {skill}
                     </span>
                   ))}
                 </div>
               </div>
               <div>
-                <h4 style={{ color: 'var(--text-secondary)', marginBottom: '8px' }}>Open Roles</h4>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                <h4 className="text-slate-400 font-semibold uppercase tracking-wider text-sm mb-3">Open Roles</h4>
+                <div className="flex flex-wrap gap-2">
                   {selectedProject.requiredRoles.map(role => (
-                    <span key={role} style={{ fontSize: '0.8rem', padding: '4px 10px', borderRadius: '6px', background: 'rgba(139,92,246,0.08)', color: 'var(--accent-color)', fontWeight: 600 }}>
+                    <span key={role} className="text-sm px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-300 font-medium border border-purple-500/20">
                       {role}
                     </span>
                   ))}
@@ -438,53 +456,53 @@ export default function Home() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <h4 style={{ color: 'var(--text-secondary)' }}>Active Team Members ({selectedProject.members.length}/{selectedProject.maxTeamSize})</h4>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+            <div className="flex flex-col gap-3">
+              <h4 className="text-slate-400 font-semibold uppercase tracking-wider text-sm">Active Team Members ({selectedProject.members.length}/{selectedProject.maxTeamSize})</h4>
+              <div className="flex flex-wrap gap-3">
                 {selectedProject.members.map(member => (
-                  <div key={member._id} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.03)', padding: '6px 12px', borderRadius: '20px', border: '1px solid var(--border-glass)' }}>
-                    <img src={member.avatarUrl} alt={member.name} style={{ width: '18px', height: '18px', borderRadius: '50%' }} />
-                    <span style={{ fontSize: '0.8rem', fontWeight: 500 }}>{member.name}</span>
+                  <div key={member._id} className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                    <img src={member.avatarUrl} alt={member.name} className="w-6 h-6 rounded-full" />
+                    <span className="text-sm font-medium text-slate-200">{member.name}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <hr style={{ border: 'none', borderTop: '1px solid var(--border-glass)' }} />
+            <div className="h-px w-full bg-white/10 my-2" />
 
-            {}
+            {/* Actions */}
             {user ? (
               user._id === selectedProject.ownerId._id ? (
-                <div style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid var(--border-glass-active)', padding: '16px', borderRadius: '12px', textAlign: 'center' }}>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>You own this project. Go to your Dashboard to invite candidates or manage pending applications!</p>
-                  <Link href="/dashboard" className="btn-primary" style={{ marginTop: '12px' }} onClick={() => setSelectedProject(null)}>
+                <div className="bg-indigo-500/10 border border-indigo-500/30 p-6 rounded-xl flex flex-col items-center text-center gap-4">
+                  <p className="text-indigo-200">You own this project. Go to your Dashboard to invite candidates or manage pending applications!</p>
+                  <Link href="/dashboard" className="btn-primary" onClick={() => setSelectedProject(null)}>
                     Go to Dashboard
                   </Link>
                 </div>
               ) : selectedProject.members.some(m => m._id === user._id) ? (
-                <div style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', padding: '16px', borderRadius: '12px', textAlign: 'center' }}>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>You are a member of this project team! Open the collaborative workspace hub now.</p>
-                  <Link href={`/workspace/${selectedProject._id}`} className="btn-primary" style={{ marginTop: '12px' }} onClick={() => setSelectedProject(null)}>
+                <div className="bg-emerald-500/10 border border-emerald-500/30 p-6 rounded-xl flex flex-col items-center text-center gap-4">
+                  <p className="text-emerald-200">You are a member of this project team! Open the collaborative workspace hub now.</p>
+                  <Link href={`/workspace/${selectedProject._id}`} className="btn-primary" onClick={() => setSelectedProject(null)}>
                     Enter Team Workspace
                   </Link>
                 </div>
               ) : selectedProject.status !== 'Recruiting' ? (
-                <div style={{ textAlign: 'center', padding: '12px', color: 'var(--text-muted)' }}>
+                <div className="text-center p-6 bg-slate-800/50 rounded-xl border border-white/5 text-slate-400">
                   This project is no longer accepting applications (Status: {selectedProject.status}).
                 </div>
               ) : (
-                <form onSubmit={handleApplyToTeam} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <h3>Apply to Join the Team</h3>
+                <form onSubmit={handleApplyToTeam} className="flex flex-col gap-5 bg-white/5 p-6 rounded-xl border border-white/10">
+                  <h3 className="text-xl font-heading font-bold text-white">Apply to Join the Team</h3>
                   
                   {appStatusText && (
-                    <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-glass)', padding: '10px 14px', borderRadius: '6px', fontSize: '0.85rem' }}>
+                    <div className="bg-slate-800/80 border border-slate-600 px-4 py-3 rounded-xl text-sm text-indigo-300">
                       {appStatusText}
                     </div>
                   )}
 
-                  <div className="form-group">
-                    <label className="form-label">Select Target Role *</label>
-                    <select className="form-select" value={appRole} onChange={(e) => setAppRole(e.target.value)} required>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium text-slate-400">Select Target Role *</label>
+                    <select className="bg-slate-900/80 border border-white/10 text-white px-4 py-3 rounded-xl outline-none focus:border-indigo-500" value={appRole} onChange={(e) => setAppRole(e.target.value)} required>
                       <option value="">-- Select a role --</option>
                       {selectedProject.requiredRoles.map(role => (
                         <option key={role} value={role}>{role}</option>
@@ -493,22 +511,21 @@ export default function Home() {
                     </select>
                   </div>
 
-                  <div className="form-group">
-                    <label className="form-label">Cover Letter / Why do you want to join? *</label>
-                    <textarea className="form-textarea" rows={3} placeholder="Describe your skills, what you can contribute, and why you are interested in this idea..." value={appCover} onChange={(e) => setAppCover(e.target.value)} required />
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium text-slate-400">Cover Letter / Why do you want to join? *</label>
+                    <textarea className="bg-slate-900/80 border border-white/10 text-white px-4 py-3 rounded-xl outline-none focus:border-indigo-500" rows={3} placeholder="Describe your skills, what you can contribute, and why you are interested..." value={appCover} onChange={(e) => setAppCover(e.target.value)} required />
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-                    <button type="button" onClick={() => setSelectedProject(null)} className="btn-secondary">Cancel</button>
-                    <button type="submit" className="btn-primary" disabled={!appRole || !appCover.trim()}>
+                  <div className="flex justify-end gap-3 mt-2">
+                    <button type="submit" className="btn-primary w-full sm:w-auto" disabled={!appRole || !appCover.trim()}>
                       Submit Application
                     </button>
                   </div>
                 </form>
               )
             ) : (
-              <div style={{ textAlign: 'center', padding: '16px', background: 'var(--bg-glass)', border: '1px solid var(--border-glass)', borderRadius: '12px' }}>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '12px' }}>You must be logged in to apply to this team.</p>
+              <div className="text-center p-8 bg-white/5 border border-white/10 rounded-xl flex flex-col items-center gap-4">
+                <p className="text-slate-400">You must be logged in to apply to this team.</p>
                 <Link href="/login" className="btn-primary" onClick={() => setSelectedProject(null)}>
                   Login with GitHub
                 </Link>
