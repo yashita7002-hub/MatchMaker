@@ -3,6 +3,7 @@ import connectDB from '@/lib/db';
 import Invitation from '@/models/Invitation';
 import Project from '@/models/Project';
 import { getSessionUser } from '@/lib/auth';
+import { createNotification } from '@/lib/notifications';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -29,29 +30,41 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     
     invitation.status = status;
     await invitation.save();
-    
-    if (status === 'Accepted') {
-      const project = await Project.findById(invitation.projectId);
-      if (project) {
-        
-        const isMember = project.members.some(m => m.toString() === invitation.userId.toString());
-        if (!isMember) {
-          if (project.members.length >= project.maxTeamSize) {
-            return NextResponse.json({ error: 'Cannot accept invitation. Team is already at maximum capacity.' }, { status: 400 });
-          }
-          project.members.push(invitation.userId);
-          
-          
-          if (project.members.length >= 2 && project.status === 'Recruiting') {
-            project.status = 'Active';
-          }
-          
-          await project.save();
+
+    const project = await Project.findById(invitation.projectId);
+    let notification = null;
+
+    if (status === 'Accepted' && project) {
+      const isMember = project.members.some(m => m.toString() === invitation.userId.toString());
+      if (!isMember) {
+        if (project.members.length >= project.maxTeamSize) {
+          return NextResponse.json({ error: 'Cannot accept invitation. Team is already at maximum capacity.' }, { status: 400 });
         }
+        project.members.push(invitation.userId);
+
+        if (project.members.length >= 2 && project.status === 'Recruiting') {
+          project.status = 'Active';
+        }
+
+        await project.save();
       }
+
+      notification = await createNotification(
+        project.ownerId.toString(),
+        'invitation',
+        `${user.name} accepted your invitation to join "${project.title}" as ${invitation.role}`,
+        `/workspace/${project._id}`
+      );
+    } else if (status === 'Declined' && project) {
+      notification = await createNotification(
+        project.ownerId.toString(),
+        'invitation',
+        `${user.name} declined your invitation to join "${project.title}"`,
+        '/dashboard'
+      );
     }
     
-    return NextResponse.json({ success: true, invitation });
+    return NextResponse.json({ success: true, invitation, notification });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }

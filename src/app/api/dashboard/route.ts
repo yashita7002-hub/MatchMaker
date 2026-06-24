@@ -14,7 +14,9 @@ export async function GET(req: Request) {
     }
     
     
-    const ownedProjects = await Project.find({ ownerId: user._id }).populate('members', 'githubUsername name avatarUrl trustScore');
+    const ownedProjects = await Project.find({ ownerId: user._id })
+      .populate('members', 'githubUsername name avatarUrl trustScore')
+      .sort({ updatedAt: -1 });
     const ownedProjectIds = ownedProjects.map(p => p._id);
     
     
@@ -53,7 +55,8 @@ export async function GET(req: Request) {
       members: user._id,
       ownerId: { $ne: user._id },
     }).populate('ownerId', 'githubUsername name avatarUrl')
-      .populate('members', 'githubUsername name avatarUrl');
+      .populate('members', 'githubUsername name avatarUrl')
+      .sort({ updatedAt: -1 });
       
     return NextResponse.json({
       success: true,

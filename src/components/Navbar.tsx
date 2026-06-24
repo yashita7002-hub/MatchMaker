@@ -6,6 +6,7 @@ import { useApp } from '@/context/AppContext';
 
 const NOTIF_TYPE_LABEL: Record<string, string> = {
   invitation: 'Invitation',
+  invitation_accepted: 'Invitation',
   application: 'Application',
   message: 'Message',
   task: 'Task',
