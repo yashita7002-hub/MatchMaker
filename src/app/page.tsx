@@ -403,71 +403,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── FEATURE CARDS ─────────────────────────────────────── */}
-      <section className="w-full max-w-7xl mx-auto px-6 py-20">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-3">
-            Every type of collaboration
-          </h2>
-          <p className="text-gray-400 text-base max-w-xl mx-auto">
-            From 48-hour hackathons to long-running open source projects — find your fit.
-          </p>
-        </div>
+      
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {FEATURES.map((f) => (
-            <button
-              key={f.title}
-              onClick={() => {
-                setCategoryFilter(f.title === 'College' ? 'College Project' : f.title === 'All' ? 'All' : f.title === 'Hackathon Teams' ? 'Hackathon' : f.title === 'Open Source' ? 'Open Source' : 'Startup');
-                scrollToFeed();
-              }}
-              className={`group text-left bg-gradient-to-br ${f.color} border rounded-xl p-5 flex flex-col gap-4 hover:scale-[1.02] transition-all duration-200 cursor-pointer`}
-            >
-              <div className={`${f.badge} w-10 h-10 rounded-lg bg-[#0d1117]/60 flex items-center justify-center`}>
-                {f.icon}
-              </div>
-              <div>
-                <h3 className="text-white font-bold text-base mb-1">{f.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{f.description}</p>
-              </div>
-              <span className={`text-xs font-semibold ${f.badge} flex items-center gap-1 mt-auto`}>
-                Browse →
-              </span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* ── HOW IT WORKS ──────────────────────────────────────── */}
-      <section className="w-full border-t border-[#30363d] bg-[#161b22]/40">
-        <div className="max-w-7xl mx-auto px-6 py-20">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-3">How it works</h2>
-            <p className="text-gray-400 text-base max-w-xl mx-auto">Get from idea to shipping team in three simple steps.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-            {/* Connector line — desktop only */}
-            <div className="hidden md:block absolute top-[28px] left-[calc(16.66%+16px)] right-[calc(16.66%+16px)] h-px bg-gradient-to-r from-[#30363d] via-[#58a6ff]/40 to-[#30363d]" />
-
-            {HOW_IT_WORKS.map((step, i) => (
-              <div key={step.step} className="relative flex flex-col items-center text-center gap-4 group">
-                <div className="relative z-10 w-14 h-14 rounded-full bg-[#0d1117] border-2 border-[#30363d] group-hover:border-[#58a6ff] transition-colors flex items-center justify-center text-[#58a6ff]">
-                  {step.icon}
-                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#58a6ff] text-[#0d1117] text-[10px] font-extrabold flex items-center justify-center">
-                    {i + 1}
-                  </span>
-                </div>
-                <div>
-                  <h3 className="text-white font-bold text-base mb-1.5">{step.title}</h3>
-                  <p className="text-gray-400 text-sm leading-relaxed max-w-xs mx-auto">{step.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      
 
       {/* ── PROJECT FEED ──────────────────────────────────────── */}
       <section ref={feedRef} id="discover" className="w-full max-w-7xl mx-auto px-6 py-16 flex flex-col gap-8">
@@ -648,6 +586,48 @@ export default function Home() {
             ))}
           </div>
         )}
+
+
+
+
+
+
+
+        {/* ── FEATURE CARDS ─────────────────────────────────────── */}
+      <section className="w-full max-w-7xl mx-auto px-6 py-20">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-3">
+            Every type of collaboration
+          </h2>
+          <p className="text-gray-400 text-base max-w-xl mx-auto">
+            From 48-hour hackathons to long-running open source projects — find your fit.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {FEATURES.map((f) => (
+            <button
+              key={f.title}
+              onClick={() => {
+                setCategoryFilter(f.title === 'College' ? 'College Project' : f.title === 'All' ? 'All' : f.title === 'Hackathon Teams' ? 'Hackathon' : f.title === 'Open Source' ? 'Open Source' : 'Startup');
+                scrollToFeed();
+              }}
+              className={`group text-left bg-gradient-to-br ${f.color} border rounded-xl p-5 flex flex-col gap-4 hover:scale-[1.02] transition-all duration-200 cursor-pointer`}
+            >
+              <div className={`${f.badge} w-10 h-10 rounded-lg bg-[#0d1117]/60 flex items-center justify-center`}>
+                {f.icon}
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-base mb-1">{f.title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">{f.description}</p>
+              </div>
+              <span className={`text-xs font-semibold ${f.badge} flex items-center gap-1 mt-auto`}>
+                Browse →
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
 
         {/* Pitch CTA at bottom of feed */}
         {!loading && projects.length > 0 && (
