@@ -3,6 +3,7 @@ import connectDB from '@/lib/db';
 import Project from '@/models/Project';
 import KanbanTask from '@/models/KanbanTask';
 import { getSessionUser } from '@/lib/auth';
+import { createNotification } from '@/lib/notifications';
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -36,8 +37,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       assignedUserName: assignedUserName || '',
       dueDate: dueDate || '',
     });
+
+    let notification = null;
+    if (assignedUserId && assignedUserId.toString() !== user._id.toString()) {
+      notification = await createNotification(
+        assignedUserId.toString(),
+        'task',
+        `You were assigned "${title}" in ${project.title}`,
+        `/workspace/${project._id}`
+      );
+    }
     
-    return NextResponse.json({ success: true, task });
+    return NextResponse.json({ success: true, task, notification });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
@@ -70,6 +81,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (!task || task.projectId.toString() !== project._id.toString()) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
+
+    const previousAssignee = task.assignedUserId?.toString();
     
     if (status !== undefined) task.status = status;
     if (title !== undefined) task.title = title;
@@ -79,7 +92,23 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (dueDate !== undefined) task.dueDate = dueDate || '';
     
     await task.save();
-    return NextResponse.json({ success: true, task });
+
+    let notification = null;
+    const newAssignee = task.assignedUserId?.toString();
+    if (
+      newAssignee &&
+      newAssignee !== user._id.toString() &&
+      newAssignee !== previousAssignee
+    ) {
+      notification = await createNotification(
+        newAssignee,
+        'task',
+        `You were assigned "${task.title}" in ${project.title}`,
+        `/workspace/${project._id}`
+      );
+    }
+
+    return NextResponse.json({ success: true, task, notification });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }

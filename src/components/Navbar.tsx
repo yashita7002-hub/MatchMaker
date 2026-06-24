@@ -1,17 +1,50 @@
 "use client";
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 
+const NOTIF_TYPE_LABEL: Record<string, string> = {
+  invitation: 'Invitation',
+  application: 'Application',
+  message: 'Message',
+  task: 'Task',
+  expense: 'Expense',
+  deadline: 'Deadline',
+  project_status: 'Project',
+};
+
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useApp();
+  const { user, logout, notifications, unreadCount, markNotificationsAsRead } = useApp();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLogout = async () => {
     await logout();
     router.push('/login');
+  };
+
+  const handleMarkAllRead = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    await markNotificationsAsRead();
+  };
+
+  const handleNotificationClick = async (notif: { _id: string; link: string; isRead: boolean }) => {
+    if (!notif.isRead) await markNotificationsAsRead(notif._id);
+    setShowNotifications(false);
+    if (notif.link) router.push(notif.link);
   };
 
   return (
@@ -29,7 +62,6 @@ export default function Navbar() {
           <span>ProjectMatch</span>
         </Link>
 
-        {/* Search Bar */}
         <div className="relative hidden md:flex items-center">
           <svg className="absolute left-3 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -44,7 +76,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Navigation Links */}
         <div className="hidden lg:flex items-center gap-4 ml-2">
           <Link href="/" className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${pathname === '/' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
             Home
@@ -67,26 +98,30 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Bell Icon for Notifications */}
-        <div className="relative group">
-          <button className="text-gray-400 hover:text-white transition-colors relative mt-1">
+        <div className="relative" ref={notifRef}>
+          <button
+            onClick={() => setShowNotifications(prev => !prev)}
+            className="text-gray-400 hover:text-white transition-colors relative mt-1"
+            aria-label="Notifications"
+          >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
-            {user && (useApp() as any).unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#f85149] rounded-full border-2 border-[#0d1117]"></span>
+            {user && unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[10px] h-2.5 px-0.5 bg-[#f85149] rounded-full border-2 border-[#0d1117] text-[8px] text-white font-bold flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
             )}
           </button>
 
-          {/* Notifications Dropdown */}
-          {user && (
-            <div className="absolute right-0 mt-2 w-80 bg-[#161b22] border border-[#30363d] rounded-md shadow-lg py-2 hidden group-hover:block z-50">
+          {user && showNotifications && (
+            <div className="absolute right-0 mt-2 w-80 bg-[#161b22] border border-[#30363d] rounded-md shadow-lg py-2 z-50">
               <div className="px-4 py-2 border-b border-[#30363d] flex justify-between items-center">
                 <h3 className="text-sm font-semibold text-white">Notifications</h3>
-                {(useApp() as any).unreadCount > 0 && (
+                {unreadCount > 0 && (
                   <button 
-                    onClick={() => (useApp() as any).markNotificationsAsRead()} 
+                    onClick={handleMarkAllRead}
                     className="text-xs text-[#58a6ff] hover:text-[#79c0ff]"
                   >
                     Mark all read
@@ -94,22 +129,24 @@ export default function Navbar() {
                 )}
               </div>
               <div className="max-h-[300px] overflow-y-auto">
-                {((useApp() as any).notifications || []).length === 0 ? (
+                {notifications.length === 0 ? (
                   <p className="text-sm text-gray-500 p-4 text-center">No notifications</p>
                 ) : (
-                  ((useApp() as any).notifications || []).map((notif: any) => (
+                  notifications.map(notif => (
                     <div 
                       key={notif._id} 
-                      onClick={() => {
-                        (useApp() as any).markNotificationsAsRead(notif._id);
-                        if (notif.link) router.push(notif.link);
-                      }}
+                      onClick={() => handleNotificationClick(notif)}
                       className={`px-4 py-3 border-b border-[#30363d]/50 hover:bg-[#21262d] cursor-pointer flex flex-col gap-1 ${!notif.isRead ? 'bg-[#58a6ff]/5' : ''}`}
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <p className={`text-sm ${!notif.isRead ? 'text-white font-medium' : 'text-gray-300'}`}>
-                          {notif.message}
-                        </p>
+                        <div className="flex flex-col gap-1 min-w-0">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#58a6ff]">
+                            {NOTIF_TYPE_LABEL[notif.type] || notif.type}
+                          </span>
+                          <p className={`text-sm ${!notif.isRead ? 'text-white font-medium' : 'text-gray-300'}`}>
+                            {notif.message}
+                          </p>
+                        </div>
                         {!notif.isRead && (
                           <span className="w-2 h-2 rounded-full bg-[#58a6ff] mt-1.5 flex-shrink-0"></span>
                         )}
@@ -146,7 +183,6 @@ export default function Navbar() {
                 )}
               </button>
               
-              {/* Dropdown Menu */}
               <div className="absolute right-0 mt-2 w-48 bg-[#161b22] border border-[#30363d] rounded-md shadow-lg py-1 hidden group-hover:block">
                 <div className="px-4 py-2 border-b border-[#30363d]">
                   <p className="text-sm font-medium text-white truncate">{user.name}</p>

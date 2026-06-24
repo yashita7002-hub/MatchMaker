@@ -3,6 +3,7 @@ import connectDB from '@/lib/db';
 import Application from '@/models/Application';
 import Project from '@/models/Project';
 import { getSessionUser } from '@/lib/auth';
+import { createNotification } from '@/lib/notifications';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -34,6 +35,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     
     application.status = status;
     await application.save();
+
+    const notification = await createNotification(
+      application.userId.toString(),
+      'application',
+      `Your application to "${project.title}" was ${status}`,
+      '/dashboard'
+    );
     
     if (status === 'Accepted') {
       
@@ -54,7 +62,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       }
     }
     
-    return NextResponse.json({ success: true, application });
+    return NextResponse.json({ success: true, application, notification });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }

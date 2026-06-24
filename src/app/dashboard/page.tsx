@@ -15,6 +15,8 @@ interface User {
 interface Project {
   _id: string;
   title: string;
+  description: string;
+  category: string;
   ownerId: string;
   status: 'Recruiting' | 'Active' | 'Completed' | 'Archived';
   requiredSkills: string[];
@@ -71,7 +73,7 @@ const getStatusColor = (status: string) => {
 };
 
 export default function Dashboard() {
-  const { user, loading: authLoading } = useApp();
+  const { user, loading: authLoading, globalSocket } = useApp();
   const [data, setData] = useState<{
     ownedProjects: Project[];
     incomingApplications: Application[];
@@ -87,6 +89,80 @@ export default function Dashboard() {
   const [loadingRecs, setLoadingRecs] = useState(false);
   const [inviteRoleMap, setInviteRoleMap] = useState<Record<string, string>>({});
   const [inviteStatusMap, setInviteStatusMap] = useState<Record<string, string>>({});
+
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editCategory, setEditCategory] = useState('');
+  const [editSkillsStr, setEditSkillsStr] = useState('');
+  const [editRolesStr, setEditRolesStr] = useState('');
+  const [editMaxTeamSize, setEditMaxTeamSize] = useState('4');
+  const [editStatus, setEditStatus] = useState<Project['status']>('Recruiting');
+  const [savingProject, setSavingProject] = useState(false);
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
+
+  const emitNotification = (notification: { userId: string; _id: string; type: string; message: string; link: string; isRead: boolean; createdAt: string }) => {
+    if (globalSocket) {
+      globalSocket.emit('notify-users', { userIds: [notification.userId], notification });
+    }
+  };
+
+  const openEditProject = (project: Project) => {
+    setEditingProject(project);
+    setEditTitle(project.title);
+    setEditDescription(project.description || '');
+    setEditCategory(project.category || 'College Project');
+    setEditSkillsStr(project.requiredSkills.join(', '));
+    setEditRolesStr(project.requiredRoles.join(', '));
+    setEditMaxTeamSize(String(project.maxTeamSize));
+    setEditStatus(project.status);
+  };
+
+  const handleSaveProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProject) return;
+    try {
+      setSavingProject(true);
+      const res = await fetch(`/api/projects/${editingProject._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editTitle,
+          description: editDescription,
+          category: editCategory,
+          requiredSkills: editSkillsStr.split(',').map(s => s.trim()).filter(Boolean),
+          requiredRoles: editRolesStr.split(',').map(r => r.trim()).filter(Boolean),
+          maxTeamSize: Number(editMaxTeamSize),
+          status: editStatus,
+        }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        json.notifications?.forEach((notif: { userId: string; _id: string; type: string; message: string; link: string; isRead: boolean; createdAt: string }) => {
+          emitNotification(notif);
+        });
+        setEditingProject(null);
+        fetchDashboardData();
+      }
+    } catch (err) {
+      console.error('Failed to update project:', err);
+    } finally {
+      setSavingProject(false);
+    }
+  };
+
+  const handleDeleteProject = async (projectId: string, projectTitle: string) => {
+    if (!confirm(`Delete "${projectTitle}" permanently? This cannot be undone.`)) return;
+    try {
+      setDeletingProjectId(projectId);
+      const res = await fetch(`/api/projects/${projectId}`, { method: 'DELETE' });
+      if (res.ok) fetchDashboardData();
+    } catch (err) {
+      console.error('Failed to delete project:', err);
+    } finally {
+      setDeletingProjectId(null);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -116,7 +192,13 @@ export default function Dashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       });
-      if (res.ok) fetchDashboardData();
+      if (res.ok) {
+        const json = await res.json();
+        if (json.notification) {
+          emitNotification(json.notification);
+        }
+        fetchDashboardData();
+      }
     } catch (err) {
       console.error('Failed to update application:', err);
     }
@@ -171,6 +253,9 @@ export default function Dashboard() {
       const json = await res.json();
       if (res.ok) {
         setInviteStatusMap(prev => ({ ...prev, [candidateId]: 'sent' }));
+        if (json.notification) {
+          emitNotification(json.notification);
+        }
         fetchDashboardData();
       } else {
         setInviteStatusMap(prev => ({ ...prev, [candidateId]: `error: ${json.error}` }));
@@ -264,13 +349,23 @@ export default function Dashboard() {
                           </span>
                         </div>
                         <div className="flex gap-2 flex-wrap">
+                          <button onClick={() => openEditProject(project)} className="px-3 py-1.5 rounded-md bg-[#21262d] border border-[#30363d] text-gray-300 text-xs font-semibold hover:border-[#8b949e] hover:text-white transition-colors">
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProject(project._id, project.title)}
+                            disabled={deletingProjectId === project._id}
+                            className="px-3 py-1.5 rounded-md bg-[#f85149]/10 border border-[#f85149]/30 text-[#ff7b72] text-xs font-semibold hover:bg-[#f85149]/20 transition-colors disabled:opacity-50"
+                          >
+                            {deletingProjectId === project._id ? 'Deleting...' : 'Delete'}
+                          </button>
                           <button onClick={() => handleOpenRecommendations(project)} className="btn-secondary !py-1.5 !px-3 !text-xs gap-1.5">
                             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <circle cx="12" cy="12" r="10" /><path d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83M16.62 12l-5.73 9.94" />
                             </svg>
                             AI Recommendations
                           </button>
-                          {project.members.length >= 2 && (
+                          {project.members.length >= 1 && (
                             <Link href={`/workspace/${project._id}`} className="btn-primary !py-1.5 !px-3 !text-xs">
                               Enter Workspace
                             </Link>
@@ -310,6 +405,27 @@ export default function Dashboard() {
                               <div className="w-full text-xs text-gray-400 italic bg-[#0d1117] p-3 rounded-lg border border-[#30363d]">
                                 "{app.coverLetter}"
                               </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {projectInvites.length > 0 && (
+                        <div className="border border-dashed border-[#30363d] rounded-xl p-4 flex flex-col gap-4">
+                          <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Invitations Sent</h4>
+                          {projectInvites.map(invite => (
+                            <div key={invite._id} className="flex flex-wrap gap-4 justify-between items-center bg-[#161b22] p-4 rounded-xl border border-[#30363d]">
+                              <div className="flex gap-3 items-center">
+                                <img src={invite.userId.avatarUrl} alt={invite.userId.name} className="w-10 h-10 rounded-full border border-[#30363d]" />
+                                <div className="flex flex-col gap-1">
+                                  <span className="font-semibold text-white text-sm">{invite.userId.name}</span>
+                                  <span className="text-xs text-gray-500">@{invite.userId.githubUsername}</span>
+                                  <span className="text-xs text-[#58a6ff]">Role offered: {invite.role}</span>
+                                </div>
+                              </div>
+                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${getStatusColor(invite.status)}`}>
+                                {invite.status}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -422,6 +538,67 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Edit Project Modal */}
+      {editingProject && (
+        <div className="fixed inset-0 bg-[#0d1117]/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold text-white">Edit Project</h2>
+              <button onClick={() => setEditingProject(null)} className="text-gray-500 hover:text-white">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            </div>
+            <form onSubmit={handleSaveProject} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-400">Title</label>
+                <input type="text" className="bg-[#0d1117] border border-[#30363d] text-white px-4 py-2.5 rounded-lg outline-none focus:border-[#58a6ff]" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} required />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-400">Description</label>
+                <textarea className="bg-[#0d1117] border border-[#30363d] text-white px-4 py-2.5 rounded-lg outline-none focus:border-[#58a6ff]" rows={3} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} required />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-400">Category</label>
+                <select className="bg-[#0d1117] border border-[#30363d] text-white px-4 py-2.5 rounded-lg outline-none focus:border-[#58a6ff]" value={editCategory} onChange={(e) => setEditCategory(e.target.value)}>
+                  <option value="College Project">College Project</option>
+                  <option value="Hackathon">Hackathon</option>
+                  <option value="Startup">Startup</option>
+                  <option value="Open Source">Open Source</option>
+                  <option value="Research">Research</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-400">Required Skills <span className="text-gray-600">(comma-separated)</span></label>
+                <input type="text" className="bg-[#0d1117] border border-[#30363d] text-white px-4 py-2.5 rounded-lg outline-none focus:border-[#58a6ff]" value={editSkillsStr} onChange={(e) => setEditSkillsStr(e.target.value)} />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-400">Required Roles <span className="text-gray-600">(comma-separated)</span></label>
+                <input type="text" className="bg-[#0d1117] border border-[#30363d] text-white px-4 py-2.5 rounded-lg outline-none focus:border-[#58a6ff]" value={editRolesStr} onChange={(e) => setEditRolesStr(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-gray-400">Max Team Size</label>
+                  <input type="number" min={2} max={20} className="bg-[#0d1117] border border-[#30363d] text-white px-4 py-2.5 rounded-lg outline-none focus:border-[#58a6ff]" value={editMaxTeamSize} onChange={(e) => setEditMaxTeamSize(e.target.value)} required />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-gray-400">Status</label>
+                  <select className="bg-[#0d1117] border border-[#30363d] text-white px-4 py-2.5 rounded-lg outline-none focus:border-[#58a6ff]" value={editStatus} onChange={(e) => setEditStatus(e.target.value as Project['status'])}>
+                    <option value="Recruiting">Recruiting</option>
+                    <option value="Active">Active</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Archived">Archived</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => setEditingProject(null)} className="px-5 py-2 rounded-lg bg-[#21262d] border border-[#30363d] text-sm text-gray-300 hover:border-[#8b949e]">Cancel</button>
+                <button type="submit" className="btn-primary" disabled={savingProject}>{savingProject ? 'Saving...' : 'Save Changes'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* AI Recommendations Modal */}
       {recommendationsProject && (

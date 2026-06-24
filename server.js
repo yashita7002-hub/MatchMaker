@@ -186,5 +186,16 @@ app.prepare().then(() => {
   httpServer.listen(PORT, (err) => {
     if (err) throw err;
     console.log(`> Ready on http://localhost:${PORT}`);
+
+    const runDeadlineCheck = () => {
+      const headers = process.env.CRON_SECRET
+        ? { Authorization: `Bearer ${process.env.CRON_SECRET}` }
+        : {};
+      fetch(`http://localhost:${PORT}/api/cron/deadlines`, { method: 'POST', headers })
+        .catch(err => console.error('Deadline cron error:', err.message));
+    };
+
+    setTimeout(runDeadlineCheck, 30000);
+    setInterval(runDeadlineCheck, 60 * 60 * 1000);
   });
 });

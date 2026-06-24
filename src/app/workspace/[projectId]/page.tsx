@@ -211,19 +211,9 @@ export default function WorkspaceHub() {
       });
       if (res.ok) {
         const json = await res.json();
-        if (json.notifyUserIds && json.notifyUserIds.length > 0) {
-          socketRef.current?.emit('notify-users', {
-            userIds: json.notifyUserIds,
-            notification: {
-              _id: Date.now().toString(),
-              type: 'project_status',
-              message: `Project '${project?.title}' is now ${newStatus}`,
-              link: `/workspace/${projectId}`,
-              isRead: false,
-              createdAt: new Date().toISOString()
-            }
-          });
-        }
+        json.notifications?.forEach((notif: { userId: string; _id: string; type: string; message: string; link: string; isRead: boolean; createdAt: string }) => {
+          socketRef.current?.emit('notify-users', { userIds: [notif.userId], notification: notif });
+        });
         fetchWorkspaceData();
       }
     } catch (err) {
@@ -276,19 +266,9 @@ export default function WorkspaceHub() {
         socketRef.current?.emit('send-message', { projectId, message: json.message });
         setMessages(prev => [...prev, json.message]);
 
-        if (json.notifyUserIds && json.notifyUserIds.length > 0) {
-          socketRef.current?.emit('notify-users', {
-            userIds: json.notifyUserIds,
-            notification: {
-              _id: Date.now().toString(),
-              type: 'message',
-              message: `${user?.name} sent a message in ${project?.title}`,
-              link: `/workspace/${projectId}`,
-              isRead: false,
-              createdAt: new Date().toISOString()
-            }
-          });
-        }
+        json.notifications?.forEach((notif: { userId: string; _id: string; type: string; message: string; link: string; isRead: boolean; createdAt: string }) => {
+          socketRef.current?.emit('notify-users', { userIds: [notif.userId], notification: notif });
+        });
         
         setChatInput('');
         setChatImageFile(null);
@@ -355,7 +335,13 @@ export default function WorkspaceHub() {
       if (res.ok) {
         const json = await res.json();
         setTasks(prev => [...prev, json.task]);
-        
+
+        if (json.notification) {
+          socketRef.current?.emit('notify-users', {
+            userIds: [json.notification.userId],
+            notification: json.notification,
+          });
+        }
         
         setTaskTitle('');
         setTaskDesc('');
@@ -442,6 +428,9 @@ export default function WorkspaceHub() {
         setExpenseDesc('');
         setShowExpenseModal(false);
         socketRef.current?.emit('expense-update', { projectId });
+        json.notifications?.forEach((notif: { userId: string; _id: string; type: string; message: string; link: string; isRead: boolean; createdAt: string }) => {
+          socketRef.current?.emit('notify-users', { userIds: [notif.userId], notification: notif });
+        });
       }
     } catch (err) {
       console.error(err);

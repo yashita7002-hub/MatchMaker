@@ -415,10 +415,14 @@ export default function Profile() {
                     Archived: 'text-gray-500 border-[#30363d] bg-[#21262d]',
                   };
                   return (
-                    <div key={proj._id} className="flex items-start justify-between p-4 bg-[#161b22] border border-[#30363d] rounded-xl hover:border-[#8b949e] transition-colors gap-4">
+                    <div
+                      key={proj._id}
+                      onClick={() => router.push(`/workspace/${proj._id}`)}
+                      className="flex items-start justify-between p-4 bg-[#161b22] border border-[#30363d] rounded-xl hover:border-[#58a6ff] transition-colors gap-4 cursor-pointer"
+                    >
                       <div className="flex flex-col gap-2 flex-1 min-w-0">
                         <div className="flex items-center gap-3 flex-wrap">
-                          <span className="text-[#58a6ff] font-semibold text-sm hover:underline cursor-pointer">{proj.title}</span>
+                          <span className="text-[#58a6ff] font-semibold text-sm hover:underline">{proj.title}</span>
                           <span className="text-xs text-gray-500">· {isOwner ? 'Project Owner' : (proj.requiredRoles[0] || 'Contributor')}</span>
                         </div>
                         <p className="text-xs text-gray-500 line-clamp-2">{proj.description}</p>

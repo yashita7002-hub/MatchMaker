@@ -3,6 +3,7 @@ import connectDB from '@/lib/db';
 import Project from '@/models/Project';
 import Invitation from '@/models/Invitation';
 import { getSessionUser } from '@/lib/auth';
+import { createNotification } from '@/lib/notifications';
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -52,8 +53,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       role,
       status: 'Pending',
     });
+
+    const notification = await createNotification(
+      userId,
+      'invitation',
+      `You were invited to join "${project.title}" as ${role}`,
+      '/dashboard'
+    );
     
-    return NextResponse.json({ success: true, invitation: invite });
+    return NextResponse.json({ success: true, invitation: invite, notification });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }

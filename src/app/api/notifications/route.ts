@@ -40,7 +40,10 @@ export async function PUT(req: Request) {
     
     // If notificationId is provided, mark that specific one as read
     if (body.notificationId) {
-      await Notification.findByIdAndUpdate(body.notificationId, { isRead: true });
+      await Notification.findOneAndUpdate(
+        { _id: body.notificationId, userId },
+        { isRead: true }
+      );
     } else {
       // Otherwise mark all as read for this user
       await Notification.updateMany({ userId, isRead: false }, { isRead: true });

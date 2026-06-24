@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Project from '@/models/Project';
 import Message from '@/models/Message';
-import Notification from '@/models/Notification';
 import { getSessionUser } from '@/lib/auth';
+import { createNotifications } from '@/lib/notifications';
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -37,21 +37,22 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       imageUrl: imageUrl || '',
     });
 
-    // Create notifications for all other members
-    const otherMembers = project.members.filter(m => m.toString() !== user._id.toString());
-    const notifications = otherMembers.map(memberId => ({
-      userId: memberId,
-      type: 'message',
-      message: `${user.name} sent a message in ${project.title}`,
-      link: `/workspace/${project._id}`
-    }));
+    const otherMembers = project.members
+      .filter(m => m.toString() !== user._id.toString())
+      .map(m => m.toString());
+    const notifications = await createNotifications(
+      otherMembers,
+      'message',
+      `${user.name} sent a message in ${project.title}`,
+      `/workspace/${project._id}`
+    );
     
-    if (notifications.length > 0) {
-      await Notification.insertMany(notifications);
-    }
-    
-    // Return members so the client can emit real-time events to them
-    return NextResponse.json({ success: true, message, notifyUserIds: otherMembers });
+    return NextResponse.json({
+      success: true,
+      message,
+      notifyUserIds: otherMembers,
+      notifications,
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
