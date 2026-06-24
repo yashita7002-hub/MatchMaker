@@ -15,12 +15,15 @@ module.exports = {
         background: "var(--background)",
         foreground: "var(--foreground)",
         primary: {
-          DEFAULT: '#6366f1',
-          hover: '#4f46e5',
+          DEFAULT: '#2ea043',
+          hover: '#238636',
         },
         surface: {
-          DEFAULT: 'rgba(255, 255, 255, 0.05)',
-          hover: 'rgba(255, 255, 255, 0.1)',
+          DEFAULT: '#161b22',
+          hover: '#21262d',
+        },
+        border: {
+          DEFAULT: '#30363d',
         }
       },
     },
