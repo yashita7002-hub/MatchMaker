@@ -27,11 +27,23 @@
   }
 
   .btn-primary {
-    @apply flex items-center justify-center gap-2 px-4 py-2 bg-[#2ea043] text-white font-medium rounded-md transition-all hover:bg-[#238636] active:scale-[0.98] border border-[rgba(240,246,252,0.1)];
+    @apply flex items-center justify-center gap-2 px-4 py-2 bg-[#238636] text-white font-medium rounded-md transition-all hover:bg-[#2ea043] active:scale-[0.98] border border-[rgba(255,255,255,0.1)] shadow-sm;
   }
 
   .btn-secondary {
-    @apply flex items-center justify-center gap-2 px-4 py-2 bg-[#21262d] border border-[#30363d] text-[#c9d1d9] font-medium rounded-md transition-all hover:bg-[#30363d] active:scale-[0.98];
+    @apply flex items-center justify-center gap-2 px-4 py-2 bg-[#21262d] border border-[#30363d] text-[#c9d1d9] font-medium rounded-md transition-all hover:bg-[#30363d] hover:border-[#8b949e] active:scale-[0.98] shadow-sm;
+  }
+
+  .github-link {
+    @apply text-[#58a6ff] hover:text-[#79c0ff] hover:underline transition-colors;
+  }
+
+  .github-badge {
+    @apply bg-[#1f6feb]/10 text-[#58a6ff] border border-[#1f6feb]/30;
+  }
+
+  .github-input {
+    @apply bg-[#0d1117] border border-[#30363d] text-[#c9d1d9] px-3.5 py-2.5 rounded-md outline-none focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff] transition-all placeholder:text-gray-500;
   }
 }
 
