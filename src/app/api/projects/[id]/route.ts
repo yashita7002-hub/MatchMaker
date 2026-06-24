@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Project from '@/models/Project';
+import User from '@/models/User';
 import { getSessionUser } from '@/lib/auth';
 import { createNotifications } from '@/lib/notifications';
+import { setupProjectGitHub } from '@/lib/github';
+import { updateProjectAnalytics } from '@/lib/analytics';
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -31,7 +34,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
     
     const { id } = await params;
-    const project = await Project.findById(id);
+    const project = await Project.findById(id).populate('members', 'githubUsername');
     if (!project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
@@ -55,10 +58,71 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     let notifyUserIds: string[] = [];
     let notifications: Awaited<ReturnType<typeof createNotifications>> = [];
+    let githubSetupResult = null;
 
-    if (body.status && body.status !== oldStatus) {
-      const membersToNotify = project.members.filter(m => m.toString() !== user._id.toString());
-      notifyUserIds = membersToNotify.map(m => m.toString());
+    // Handle status change to Active
+    if (body.status && body.status !== oldStatus && body.status === 'Active') {
+      // Trigger GitHub setup
+      try {
+        const ownerData = await User.findById(user._id);
+        const githubToken = process.env.GITHUB_TOKEN;
+        
+        if (ownerData && githubToken) {
+          const teamMembers = await Promise.all(
+            project.members
+              .filter((m: any) => m._id.toString() !== user._id.toString())
+              .map(async (memberId: any) => {
+                const member = await User.findById(memberId);
+                return {
+                  githubUsername: member?.githubUsername,
+                  userId: member?._id.toString(),
+                };
+              })
+          );
+
+          githubSetupResult = await setupProjectGitHub(
+            project._id.toString(),
+            project.title,
+            project.description,
+            ownerData.githubUsername,
+            githubToken,
+            teamMembers.filter((m: any) => m.githubUsername)
+          );
+
+          console.log('GitHub setup result:', githubSetupResult);
+        }
+      } catch (githubError: any) {
+        console.error('GitHub setup error:', githubError.message);
+        // Don't fail the request, just log the error
+      }
+
+      // Notify members about status change
+      const membersToNotify = project.members.filter((m: any) => m._id?.toString() !== user._id.toString());
+      notifyUserIds = membersToNotify.map((m: any) => m._id?.toString() || m.toString());
+
+      if (membersToNotify.length > 0) {
+        let notificationMessage = `Project "${project.title}" is now ${project.status}`;
+        if (githubSetupResult?.success) {
+          notificationMessage += ` and a GitHub repository has been created!`;
+        }
+
+        notifications = await createNotifications(
+          notifyUserIds,
+          'project_status',
+          notificationMessage,
+          `/workspace/${project._id}`
+        );
+      }
+
+      // Update analytics
+      try {
+        await updateProjectAnalytics(id);
+      } catch (analyticsError: any) {
+        console.error('Analytics update error:', analyticsError.message);
+      }
+    } else if (body.status && body.status !== oldStatus) {
+      const membersToNotify = project.members.filter((m: any) => m._id?.toString() !== user._id.toString());
+      notifyUserIds = membersToNotify.map((m: any) => m._id?.toString() || m.toString());
 
       if (membersToNotify.length > 0) {
         notifications = await createNotifications(
@@ -70,7 +134,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       }
     }
     
-    return NextResponse.json({ success: true, project, notifyUserIds, notifications });
+    return NextResponse.json({
+      success: true,
+      project,
+      notifyUserIds,
+      notifications,
+      githubSetup: githubSetupResult,
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }

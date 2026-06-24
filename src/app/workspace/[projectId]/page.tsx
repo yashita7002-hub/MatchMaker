@@ -74,7 +74,7 @@ export default function WorkspaceHub() {
   const { user } = useApp();
   const projectId = params.projectId as string;
   
-  const [activeTab, setActiveTab] = useState<'chat' | 'kanban' | 'discussions' | 'vault' | 'expenses' | 'reviews'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'kanban' | 'discussions' | 'vault' | 'expenses' | 'reviews' | 'analytics'>('chat');
   const [project, setProject] = useState<Project | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -580,7 +580,7 @@ export default function WorkspaceHub() {
 
       {/* Tabs */}
       <div className="border-b border-[#30363d] flex gap-6 px-2 overflow-x-auto">
-        {(['chat', 'kanban', 'discussions', 'vault', 'expenses', 'reviews'] as const).map((tab) => (
+        {(['chat', 'kanban', 'discussions', 'vault', 'expenses', 'reviews', 'analytics'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => { setActiveTab(tab); setSelectedThread(null); }}
@@ -595,6 +595,7 @@ export default function WorkspaceHub() {
              tab === 'discussions' ? <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Discussions</> :
              tab === 'vault' ? <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> Vault</> :
              tab === 'expenses' ? <><span className="font-bold">$</span> Expenses</> :
+             tab === 'analytics' ? <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="2" x2="12" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Analytics</> :
              <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg> Reviews</>}
           </button>
         ))}
@@ -956,6 +957,20 @@ export default function WorkspaceHub() {
                   Select a teammate on the left to start rating them.
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <div className="flex flex-col gap-6">
+            <Link href={`/workspace/${projectId}/analytics`} className="inline-flex items-center gap-2 px-4 py-2 bg-[#1f6feb]/10 border border-[#1f6feb]/30 text-[#58a6ff] rounded-lg hover:bg-[#1f6feb]/20 transition-colors w-max">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              View Full Dashboard
+            </Link>
+            <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6 text-center text-gray-400">
+              <p className="mb-3">📊 Analytics Dashboard Available</p>
+              <p className="text-sm">Click the button above to view comprehensive project analytics including team activity, task completion rates, contributor statistics, expense trends, and more.</p>
             </div>
           </div>
         )}
