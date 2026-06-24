@@ -53,11 +53,14 @@ export default function Navbar() {
             Explore
           </Link>
           {user && (
-            <Link href={`/profile/${user.githubUsername}`} className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${pathname.startsWith('/profile') ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+            <Link href={`/profile/${user.githubUsername}`} className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${pathname.startsWith('/profile') ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`}>
               Profile
             </Link>
           )}
-          <Link href="/dashboard" className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${pathname.includes('workspace') ? 'bg-[#21262d] text-white' : 'text-gray-400 hover:text-white'}`}>
+          <Link href="/dashboard" className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${pathname.includes('/project') ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+            Project Page
+          </Link>
+          <Link href="/dashboard" className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${pathname.includes('workspace') ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
             Team Hub
           </Link>
         </div>
