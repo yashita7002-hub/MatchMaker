@@ -1,29 +1,44 @@
+import { cookies } from 'next/headers';
 import connectDB from './db';
 import User from '@/models/User';
 
-export async function getSessionUser(req: Request) {
-  console.log(process.env.MONGODB_URI);
+const SESSION_COOKIE = 'session_user_id';
+const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
+
+function sessionCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+    maxAge: SESSION_MAX_AGE,
+    path: '/',
+  };
+}
+
+export async function getSessionUserId(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get(SESSION_COOKIE)?.value ?? null;
+}
+
+export async function getSessionUser(_req?: Request) {
+  const userId = await getSessionUserId();
+  if (!userId) return null;
+
   await connectDB();
-  
-  
-  const cookieHeader = req.headers.get('cookie') || '';
-  const match = cookieHeader.match(/session_user_id=([^;]+)/);
-  if (!match) return null;
-  
-  const userId = match[1];
+
   try {
-    const user = await User.findById(userId);
-    return user;
-  } catch (error) {
+    return await User.findById(userId);
+  } catch {
     return null;
   }
 }
 
-export function serializeSessionCookie(userId: string): string {
-  const isProduction = process.env.NODE_ENV === 'production';
-  return `session_user_id=${userId}; HttpOnly; Path=/; Max-Age=${60 * 60 * 24 * 7}; SameSite=Lax${isProduction ? '; Secure' : ''}`;
+export async function setSessionUser(userId: string) {
+  const cookieStore = await cookies();
+  cookieStore.set(SESSION_COOKIE, userId, sessionCookieOptions());
 }
 
-export function serializeClearCookie(): string {
-  return `session_user_id=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax`;
+export async function clearSessionUser() {
+  const cookieStore = await cookies();
+  cookieStore.delete(SESSION_COOKIE);
 }

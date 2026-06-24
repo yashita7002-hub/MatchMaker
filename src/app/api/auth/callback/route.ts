@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
-import { serializeSessionCookie } from '@/lib/auth';
+import { setSessionUser } from '@/lib/auth';
 
 function getBaseUrl(req: Request): string {
   // 1. Prefer explicit BASE_URL env var (set on Railway)
@@ -118,9 +118,8 @@ export async function GET(req: Request) {
       await user.save();
     }
     
-    const response = NextResponse.redirect(`${baseUrl}/dashboard`);
-    response.headers.set('Set-Cookie', serializeSessionCookie(user._id.toString()));
-    return response;
+    await setSessionUser(user._id.toString());
+    return NextResponse.redirect(`${baseUrl}/dashboard`);
   } catch (error) {
     console.error('OAuth Callback Error:', error);
     return NextResponse.redirect(`${baseUrl}/login?error=oauth_failed`);

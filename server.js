@@ -17,6 +17,7 @@ const PORT = process.env.PORT || 3000;
 
 app.prepare().then(() => {
   const server = express();
+  server.set('trust proxy', 1);
 
   // Cloudinary Config
   const hasCloudinary = process.env.CLOUDINARY_CLOUD_NAME && 

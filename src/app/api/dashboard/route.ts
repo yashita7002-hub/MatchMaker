@@ -61,10 +61,13 @@ export async function GET(req: Request) {
     return NextResponse.json({
       success: true,
       ownedProjects,
-      incomingApplications,
-      outgoingInvitations,
-      myApplications,
-      myInvitations,
+      incomingApplications: incomingApplications.filter(a => a.projectId && a.userId),
+      outgoingInvitations: outgoingInvitations.filter(i => i.projectId && i.userId),
+      myApplications: myApplications.filter(a => a.projectId),
+      myInvitations: myInvitations.filter(i => {
+        const project = i.projectId as { ownerId?: unknown } | null;
+        return project && project.ownerId;
+      }),
       activeTeams,
     });
   } catch (error: any) {

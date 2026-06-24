@@ -6,15 +6,16 @@ import { useApp } from '@/context/AppContext';
 export default function LoginClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, loginMock, loading } = useApp();
+  const { user, loginMock } = useApp();
   const [username, setUsername] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const oauthError = searchParams.get('error');
 
   useEffect(() => {
     if (user) {
-      router.push('/dashboard');
+      router.replace('/dashboard');
     }
   }, [user, router]);
 
@@ -30,9 +31,11 @@ export default function LoginClient() {
     e.preventDefault();
     if (!username.trim()) return;
     setErrorMsg('');
+    setSubmitting(true);
     const success = await loginMock(username);
+    setSubmitting(false);
     if (success) {
-      router.push('/dashboard');
+      router.replace('/dashboard');
     } else {
       setErrorMsg('Failed to log in. Please check your network connection.');
     }
@@ -40,9 +43,11 @@ export default function LoginClient() {
 
   const handleQuickLogin = async (mockUser: string) => {
     setErrorMsg('');
+    setSubmitting(true);
     const success = await loginMock(mockUser);
+    setSubmitting(false);
     if (success) {
-      router.push('/dashboard');
+      router.replace('/dashboard');
     } else {
       setErrorMsg(`Failed to log in as ${mockUser}`);
     }
@@ -96,10 +101,10 @@ export default function LoginClient() {
                 placeholder="e.g. torvalds"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                disabled={loading}
+                disabled={submitting}
               />
-              <button type="submit" className="btn-secondary !px-6" disabled={loading}>
-                {loading ? (
+              <button type="submit" className="btn-secondary !px-6" disabled={submitting}>
+                {submitting ? (
                   <svg className="animate-spin h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

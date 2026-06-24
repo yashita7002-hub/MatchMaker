@@ -66,6 +66,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const fetchNotifications = async (userId: string) => {
     try {
       const res = await fetch('/api/notifications', {
+        credentials: 'include',
         headers: { 'X-User-Id': userId }
       });
       if (res.ok) {
@@ -117,7 +118,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const res = await fetch('/api/auth/me');
+      const res = await fetch('/api/auth/me', { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         if (data.authenticated) {
@@ -125,9 +126,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } else {
           setUser(null);
         }
+      } else {
+        setUser(null);
       }
     } catch (error) {
       console.error('Session refresh failed:', error);
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -135,9 +139,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const loginMock = async (username: string): Promise<boolean> => {
     try {
-      setLoading(true);
       const res = await fetch('/api/auth/mock', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username }),
       });
@@ -150,14 +154,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.error('Mock login failed:', err);
       return false;
-    } finally {
-      setLoading(false);
     }
   };
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
       setUser(null);
     } catch (err) {
       console.error('Logout failed:', err);
@@ -169,6 +171,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       await fetch('/api/notifications', {
         method: 'PUT',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'X-User-Id': user._id

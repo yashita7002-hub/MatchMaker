@@ -186,7 +186,11 @@ export default function Dashboard() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/dashboard');
+      const res = await fetch('/api/dashboard', { credentials: 'include' });
+      if (res.status === 401) {
+        router.replace('/login');
+        return;
+      }
       if (res.ok) {
         const json = await res.json();
         setData(json);
@@ -200,7 +204,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/login');
+      router.replace('/login');
     }
   }, [user, authLoading, router]);
 
@@ -296,7 +300,7 @@ export default function Dashboard() {
     }
   };
 
-  if (authLoading || !user) {
+  if (authLoading) {
     return (
       <div className="flex-1 flex items-center justify-center py-32 text-[#58a6ff]">
         <div className="flex flex-col items-center gap-4">
@@ -308,6 +312,10 @@ export default function Dashboard() {
         </div>
       </div>
     );
+  }
+
+  if (!user) {
+    return null;
   }
 
   if (loading) {
@@ -360,8 +368,8 @@ export default function Dashboard() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {data?.ownedProjects.map(project => {
-                  const projectApps = data.incomingApplications.filter(a => a.projectId._id === project._id);
-                  const projectInvites = data.outgoingInvitations.filter(i => i.projectId._id === project._id);
+                  const projectApps = data.incomingApplications.filter(a => a.projectId?._id === project._id);
+                  const projectInvites = data.outgoingInvitations.filter(i => i.projectId?._id === project._id);
                   const progress = memberProgress(project.members.length, project.maxTeamSize);
                   const isExpanded = expandedProjectId === project._id;
 
@@ -549,9 +557,9 @@ export default function Dashboard() {
                   {data?.myInvitations.map(invite => (
                     <div key={invite._id} className="flex flex-col gap-3">
                       <p className="text-sm text-gray-300 leading-relaxed">
-                        <span className="font-semibold text-white">{invite.projectId.ownerId.name}</span>
+                        <span className="font-semibold text-white">{invite.projectId?.ownerId?.name ?? 'Someone'}</span>
                         {' '}invited you to join{' '}
-                        <span className="font-semibold text-[#58a6ff]">{invite.projectId.title}</span>
+                        <span className="font-semibold text-[#58a6ff]">{invite.projectId?.title ?? 'a project'}</span>
                       </p>
                       <p className="text-[11px] text-[#58a6ff]">Role: {invite.role}</p>
                       <div className="flex gap-2">
@@ -585,7 +593,7 @@ export default function Dashboard() {
                   {data?.myApplications.slice(0, 4).map((app: { _id: string; projectId: { title: string }; role: string; status: string; createdAt: string }) => (
                     <div key={app._id} className="px-4 py-3 flex items-center justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-white truncate">{app.projectId.title}</p>
+                        <p className="text-sm font-semibold text-white truncate">{app.projectId?.title ?? 'Unknown project'}</p>
                         <p className="text-[11px] text-gray-500">Applied {app.createdAt ? timeAgo(app.createdAt) : 'recently'}</p>
                       </div>
                       <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-semibold border ${getStatusColor(app.status)}`}>

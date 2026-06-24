@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
-import { serializeSessionCookie } from '@/lib/auth';
+import { setSessionUser } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
@@ -107,9 +107,8 @@ export async function POST(req: Request) {
       });
     }
 
-    const response = NextResponse.json({ success: true, user });
-    response.headers.set('Set-Cookie', serializeSessionCookie(user._id.toString()));
-    return response;
+    await setSessionUser(user._id.toString());
+    return NextResponse.json({ success: true, user });
   } catch (error: any) {
     console.error('Mock Auth Error:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
