@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import TrustStars from '@/components/TrustStars';
 
@@ -89,6 +90,7 @@ const timeAgo = (dateStr: string) => {
 const memberProgress = (current: number, max: number) => Math.min(100, Math.round((current / max) * 100));
 
 export default function Dashboard() {
+  const router = useRouter();
   const { user, loading: authLoading, globalSocket } = useApp();
   const [data, setData] = useState<{
     ownedProjects: Project[];
@@ -197,6 +199,12 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
+
+  useEffect(() => {
     if (user) {
       fetchDashboardData();
     }
@@ -288,7 +296,7 @@ export default function Dashboard() {
     }
   };
 
-  if (authLoading || loading) {
+  if (authLoading || !user) {
     return (
       <div className="flex-1 flex items-center justify-center py-32 text-[#58a6ff]">
         <div className="flex flex-col items-center gap-4">
@@ -302,24 +310,24 @@ export default function Dashboard() {
     );
   }
 
-  if (!user) {
+  if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center py-20 px-6">
-        <div className="bg-[#161b22] border border-[#30363d] rounded-xl w-full max-w-md p-10 text-center flex flex-col items-center gap-6">
-          <div className="w-16 h-16 rounded-full bg-[#f85149]/10 flex items-center justify-center border border-[#f85149]/30">
-            <svg className="w-8 h-8 text-[#ff7b72]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-white">Access Denied</h2>
-          <p className="text-gray-400">You must log in to view your dashboard.</p>
-          <Link href="/login" className="btn-primary w-full justify-center">Login with GitHub</Link>
+      <div className="flex-1 flex items-center justify-center py-32 text-[#58a6ff]">
+        <div className="flex flex-col items-center gap-4">
+          <svg className="animate-spin h-12 w-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span className="text-gray-400 text-sm">Loading your dashboard...</span>
         </div>
       </div>
     );
   }
 
   const activeProjectCount = data?.ownedProjects.filter(p => p.status === 'Active' || p.status === 'Recruiting').length ?? 0;
+  const matchTip = user?.skills?.length
+    ? `Teams are looking for ${user.skills.slice(0, 2).join(' and ')} expertise. Keep your profile tags updated to increase visibility!`
+    : 'Teams are looking for Go and Kubernetes expertise this week. Update your profile tags to increase visibility!';
 
   return (
     <div className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-6 py-8 flex flex-col gap-8">

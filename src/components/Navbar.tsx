@@ -48,6 +48,13 @@ export default function Navbar() {
     if (notif.link) router.push(notif.link);
   };
 
+  const handleProtectedNav = (e: React.MouseEvent) => {
+    if (!user) {
+      e.preventDefault();
+      router.push('/login');
+    }
+  };
+
   return (
     <nav className="sticky top-0 z-50 bg-[#0d1117] border-b border-[#30363d] px-6 py-3 flex justify-between items-center transition-all duration-300">
       <div className="flex items-center gap-6">
@@ -81,7 +88,7 @@ export default function Navbar() {
           <Link href="/" className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${pathname === '/' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
             Home
           </Link>
-          <Link href="/dashboard" className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${pathname === '/dashboard' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+          <Link href="/dashboard" onClick={handleProtectedNav} className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${pathname === '/dashboard' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
             Explore
           </Link>
           {user && (
@@ -89,10 +96,10 @@ export default function Navbar() {
               Profile
             </Link>
           )}
-          <Link href="/projects" className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${pathname === '/projects' ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`}>
+          <Link href="/projects" onClick={handleProtectedNav} className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${pathname === '/projects' ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`}>
             Project Page
           </Link>
-          <Link href="/dashboard" className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${pathname.includes('workspace') ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+          <Link href="/dashboard" onClick={handleProtectedNav} className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${pathname.includes('workspace') ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
             Team Hub
           </Link>
         </div>
