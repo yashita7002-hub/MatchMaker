@@ -320,9 +320,6 @@ export default function Dashboard() {
   }
 
   const activeProjectCount = data?.ownedProjects.filter(p => p.status === 'Active' || p.status === 'Recruiting').length ?? 0;
-  const matchTip = user?.skills?.length
-    ? `Teams are looking for ${user.skills.slice(0, 2).join(' and ')} expertise. Keep your profile tags updated to increase visibility!`
-    : 'Teams are looking for Go and Kubernetes expertise this week. Update your profile tags to increase visibility!';
 
   return (
     <div className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-6 py-8 flex flex-col gap-8">
@@ -598,7 +595,9 @@ export default function Dashboard() {
             </div>
           </div>
 
-         
+
+        </aside>
+      </div>
 
       {/* Edit Project Modal */}
       {editingProject && (
