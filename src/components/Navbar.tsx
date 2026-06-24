@@ -67,13 +67,63 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Bell Icon */}
-        <button className="text-gray-400 hover:text-white transition-colors">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-          </svg>
-        </button>
+        {/* Bell Icon for Notifications */}
+        <div className="relative group">
+          <button className="text-gray-400 hover:text-white transition-colors relative mt-1">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            {user && (useApp() as any).unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#f85149] rounded-full border-2 border-[#0d1117]"></span>
+            )}
+          </button>
+
+          {/* Notifications Dropdown */}
+          {user && (
+            <div className="absolute right-0 mt-2 w-80 bg-[#161b22] border border-[#30363d] rounded-md shadow-lg py-2 hidden group-hover:block z-50">
+              <div className="px-4 py-2 border-b border-[#30363d] flex justify-between items-center">
+                <h3 className="text-sm font-semibold text-white">Notifications</h3>
+                {(useApp() as any).unreadCount > 0 && (
+                  <button 
+                    onClick={() => (useApp() as any).markNotificationsAsRead()} 
+                    className="text-xs text-[#58a6ff] hover:text-[#79c0ff]"
+                  >
+                    Mark all read
+                  </button>
+                )}
+              </div>
+              <div className="max-h-[300px] overflow-y-auto">
+                {((useApp() as any).notifications || []).length === 0 ? (
+                  <p className="text-sm text-gray-500 p-4 text-center">No notifications</p>
+                ) : (
+                  ((useApp() as any).notifications || []).map((notif: any) => (
+                    <div 
+                      key={notif._id} 
+                      onClick={() => {
+                        (useApp() as any).markNotificationsAsRead(notif._id);
+                        if (notif.link) router.push(notif.link);
+                      }}
+                      className={`px-4 py-3 border-b border-[#30363d]/50 hover:bg-[#21262d] cursor-pointer flex flex-col gap-1 ${!notif.isRead ? 'bg-[#58a6ff]/5' : ''}`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <p className={`text-sm ${!notif.isRead ? 'text-white font-medium' : 'text-gray-300'}`}>
+                          {notif.message}
+                        </p>
+                        {!notif.isRead && (
+                          <span className="w-2 h-2 rounded-full bg-[#58a6ff] mt-1.5 flex-shrink-0"></span>
+                        )}
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {new Date(notif.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         {user ? (
           <div className="flex items-center gap-3">

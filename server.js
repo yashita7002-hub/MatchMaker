@@ -140,6 +140,23 @@ app.prepare().then(() => {
   io.on('connection', (socket) => {
     console.log(`Socket Client Connected: ${socket.id}`);
 
+    // Join a specific global room for a user to receive personalized alerts
+    socket.on('register-global', ({ userId }) => {
+      if (userId) {
+        socket.join(`global_${userId}`);
+        console.log(`Socket ${socket.id} registered for global_${userId}`);
+      }
+    });
+
+    // Emits a real-time notification to a list of users
+    socket.on('notify-users', ({ userIds, notification }) => {
+      if (Array.isArray(userIds)) {
+        userIds.forEach(id => {
+          socket.to(`global_${id}`).emit('new-notification', notification);
+        });
+      }
+    });
+
     socket.on('join-room', ({ projectId }) => {
       socket.join(`room_${projectId}`);
       console.log(`Socket ${socket.id} joined room_${projectId}`);

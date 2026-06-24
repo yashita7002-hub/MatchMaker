@@ -40,6 +40,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
     
     const body = await req.json();
+    const oldStatus = project.status;
+    
     project.title = body.title || project.title;
     project.description = body.description || project.description;
     project.category = body.category || project.category;
@@ -49,7 +51,29 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     project.status = body.status || project.status;
     
     await project.save();
-    return NextResponse.json({ success: true, project });
+
+    let notifyUserIds: string[] = [];
+
+    // If status changed to Active or Completed, notify members
+    if (body.status && body.status !== oldStatus) {
+      // Lazy-load Notification model to avoid circular dependency issues if any
+      const Notification = (await import('@/models/Notification')).default;
+      
+      const membersToNotify = project.members.filter(m => m.toString() !== user._id.toString());
+      notifyUserIds = membersToNotify.map(m => m.toString());
+
+      if (membersToNotify.length > 0) {
+        const notifications = membersToNotify.map(memberId => ({
+          userId: memberId,
+          type: 'project_status',
+          message: `Project '${project.title}' is now ${project.status}`,
+          link: `/workspace/${project._id}`
+        }));
+        await Notification.insertMany(notifications);
+      }
+    }
+    
+    return NextResponse.json({ success: true, project, notifyUserIds });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }

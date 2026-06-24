@@ -210,6 +210,20 @@ export default function WorkspaceHub() {
         body: JSON.stringify({ status: newStatus }),
       });
       if (res.ok) {
+        const json = await res.json();
+        if (json.notifyUserIds && json.notifyUserIds.length > 0) {
+          socketRef.current?.emit('notify-users', {
+            userIds: json.notifyUserIds,
+            notification: {
+              _id: Date.now().toString(),
+              type: 'project_status',
+              message: `Project '${project?.title}' is now ${newStatus}`,
+              link: `/workspace/${projectId}`,
+              isRead: false,
+              createdAt: new Date().toISOString()
+            }
+          });
+        }
         fetchWorkspaceData();
       }
     } catch (err) {
@@ -261,11 +275,23 @@ export default function WorkspaceHub() {
         
         socketRef.current?.emit('send-message', { projectId, message: json.message });
         setMessages(prev => [...prev, json.message]);
-        
+
+        if (json.notifyUserIds && json.notifyUserIds.length > 0) {
+          socketRef.current?.emit('notify-users', {
+            userIds: json.notifyUserIds,
+            notification: {
+              _id: Date.now().toString(),
+              type: 'message',
+              message: `${user?.name} sent a message in ${project?.title}`,
+              link: `/workspace/${projectId}`,
+              isRead: false,
+              createdAt: new Date().toISOString()
+            }
+          });
+        }
         
         setChatInput('');
         setChatImageFile(null);
-        
         
         socketRef.current?.emit('typing-indicator', { projectId, userName: user?.name, isTyping: false });
       }
