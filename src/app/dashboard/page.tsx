@@ -711,10 +711,14 @@ export default function Dashboard() {
                     <div key={rec.candidate._id} className="flex flex-wrap lg:flex-nowrap gap-6 bg-[#0d1117] border border-[#30363d] rounded-xl p-6">
                       {/* Candidate Info */}
                       <div className="flex gap-4 flex-1 min-w-[280px]">
-                        <img src={rec.candidate.avatarUrl} alt={rec.candidate.name} className="w-12 h-12 rounded-full border border-[#30363d] flex-shrink-0" />
+                        <Link href={`/profile/${rec.candidate.githubUsername}`} className="flex-shrink-0">
+                          <img src={rec.candidate.avatarUrl} alt={rec.candidate.name} className="w-12 h-12 rounded-full border border-[#30363d] hover:border-[#58a6ff] transition-colors cursor-pointer" />
+                        </Link>
                         <div className="flex flex-col gap-1.5">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-bold text-sm text-white">{rec.candidate.name}</span>
+                            <Link href={`/profile/${rec.candidate.githubUsername}`} className="font-bold text-sm text-white hover:text-[#58a6ff] transition-colors">
+                              {rec.candidate.name}
+                            </Link>
                             <span className="text-gray-500 text-[11px]">@{rec.candidate.githubUsername}</span>
                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${getStatusColor(rec.candidate.status)}`}>
                               {rec.candidate.status}

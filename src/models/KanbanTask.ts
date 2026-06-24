@@ -8,6 +8,7 @@ export interface IKanbanTask extends Document {
   assignedUserId?: mongoose.Types.ObjectId;
   assignedUserName?: string;
   dueDate?: string;
+  deadlineNotified?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,6 +26,7 @@ const KanbanTaskSchema: Schema = new Schema({
   assignedUserId: { type: Schema.Types.ObjectId, ref: 'User' },
   assignedUserName: { type: String, default: '' },
   dueDate: { type: String, default: '' },
+  deadlineNotified: { type: Boolean, default: false },
 }, { timestamps: true });
 
 const KanbanTask: Model<IKanbanTask> = mongoose.models.KanbanTask || mongoose.model<IKanbanTask>('KanbanTask', KanbanTaskSchema);

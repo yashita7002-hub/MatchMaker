@@ -24,6 +24,7 @@ export async function POST(req: Request) {
       status: { $ne: 'done' },
       dueDate: { $ne: '' },
       assignedUserId: { $exists: true, $ne: null },
+      deadlineNotified: false,
     });
 
     const created: string[] = [];
@@ -52,6 +53,10 @@ export async function POST(req: Request) {
         `Task "${task.title}" in ${projectTitle} is due within 24 hours`,
         link
       );
+      
+      task.deadlineNotified = true;
+      await task.save();
+
       created.push(task._id.toString());
     }
 
