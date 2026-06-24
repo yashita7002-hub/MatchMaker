@@ -43,7 +43,7 @@ export async function updateProjectAnalytics(projectId: string): Promise<void> {
         t => t.assignedUserId?.toString() === memberId.toString() && t.status === 'done'
       );
       const memberDiscussions = discussions.filter(d => d.creatorId?.toString() === memberId.toString());
-      const memberMessages = messages.filter(m => m.senderId?.toString() === memberId.toString());
+      const memberMessages = messages.filter(m => m.userId?.toString() === memberId.toString());
 
       return {
         userId: memberId,

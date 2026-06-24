@@ -80,8 +80,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
               })
           );
 
-          const validTeamMembers = teamMembers.filter((m): m is { githubUsername: string; userId: string | undefined } => 
-            m.githubUsername !== undefined && m.githubUsername !== null
+          const validTeamMembers = teamMembers.filter((m): m is { githubUsername: string; userId: string } => 
+            m.githubUsername !== undefined && m.githubUsername !== null &&
+            m.userId !== undefined && m.userId !== null
           );
 
           githubSetupResult = await setupProjectGitHub(
