@@ -37,10 +37,13 @@ interface ProjectItem {
   _id: string;
   title: string;
   description: string;
+  category: string;
   status: 'Recruiting' | 'Active' | 'Completed' | 'Archived';
   requiredSkills: string[];
   requiredRoles: string[];
-  ownerId: { _id: string; githubUsername: string; name: string };
+  maxTeamSize: number;
+  ownerId: { _id: string; githubUsername: string; name: string; avatarUrl?: string };
+  members: { _id: string; githubUsername: string; name: string; avatarUrl?: string }[];
 }
 
 interface ReviewItem {
@@ -414,32 +417,57 @@ export default function Profile() {
                     Completed: 'text-gray-400 border-[#30363d] bg-[#21262d]',
                     Archived: 'text-gray-500 border-[#30363d] bg-[#21262d]',
                   };
+                  const allMembers = [
+                    proj.ownerId,
+                    ...(proj.members || []).filter(m => m._id !== proj.ownerId?._id),
+                  ].filter(Boolean);
                   return (
                     <div
                       key={proj._id}
                       onClick={() => router.push(`/workspace/${proj._id}`)}
-                      className="flex items-start justify-between p-4 bg-[#161b22] border border-[#30363d] rounded-xl hover:border-[#58a6ff] transition-colors gap-4 cursor-pointer"
+                      className="flex flex-col gap-3 p-4 bg-[#161b22] border border-[#30363d] rounded-xl hover:border-[#58a6ff] transition-colors cursor-pointer"
                     >
-                      <div className="flex flex-col gap-2 flex-1 min-w-0">
-                        <div className="flex items-center gap-3 flex-wrap">
-                          <span className="text-[#58a6ff] font-semibold text-sm hover:underline">{proj.title}</span>
-                          <span className="text-xs text-gray-500">· {isOwner ? 'Project Owner' : (proj.requiredRoles[0] || 'Contributor')}</span>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex flex-col gap-2 flex-1 min-w-0">
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <span className="text-[#58a6ff] font-semibold text-sm hover:underline">{proj.title}</span>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#21262d] border border-[#30363d] text-gray-300">
+                              {proj.category}
+                            </span>
+                            <span className="text-xs text-gray-500">· {isOwner ? 'Project Owner' : 'Teammate'}</span>
+                          </div>
+                          <p className="text-xs text-gray-500 line-clamp-2">{proj.description}</p>
+                          {(proj.requiredSkills.length > 0 || proj.requiredRoles.length > 0) && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {proj.requiredSkills.slice(0, 3).map(s => (
+                                <span key={s} className="text-[11px] px-2 py-0.5 bg-[#0d1117] border border-[#30363d] text-gray-400 rounded-full">{s}</span>
+                              ))}
+                              {proj.requiredRoles.slice(0, 2).map(r => (
+                                <span key={r} className="text-[11px] px-2 py-0.5 bg-[#0d1117] border border-[#30363d] text-gray-400 rounded-full">{r}</span>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        <p className="text-xs text-gray-500 line-clamp-2">{proj.description}</p>
-                        {(proj.requiredSkills.length > 0 || proj.requiredRoles.length > 0) && (
-                          <div className="flex flex-wrap gap-1.5 mt-1">
-                            {proj.requiredSkills.slice(0, 3).map(s => (
-                              <span key={s} className="text-[11px] px-2 py-0.5 bg-[#0d1117] border border-[#30363d] text-gray-400 rounded-full">{s}</span>
-                            ))}
-                            {proj.requiredRoles.slice(0, 2).map(r => (
-                              <span key={r} className="text-[11px] px-2 py-0.5 bg-[#0d1117] border border-[#30363d] text-gray-400 rounded-full">{r}</span>
+                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border flex-shrink-0 ${statusColor[proj.status] || statusColor.Archived}`}>
+                          {proj.status}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between pt-2 border-t border-[#30363d]/60">
+                        <div className="flex items-center gap-2">
+                          <div className="flex -space-x-2">
+                            {allMembers.slice(0, 5).map(m => (
+                              m.avatarUrl ? (
+                                <img key={m._id} src={m.avatarUrl} alt={m.name} title={m.name} className="w-6 h-6 rounded-full border-2 border-[#161b22]" />
+                              ) : (
+                                <div key={m._id} title={m.name} className="w-6 h-6 rounded-full bg-[#6e40c9] text-white flex items-center justify-center text-[10px] font-bold border-2 border-[#161b22]">
+                                  {m.name?.substring(0, 1).toUpperCase()}
+                                </div>
+                              )
                             ))}
                           </div>
-                        )}
+                          <span className="text-xs text-gray-500">{allMembers.length}/{proj.maxTeamSize} members</span>
+                        </div>
                       </div>
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border flex-shrink-0 ${statusColor[proj.status] || statusColor.Archived}`}>
-                        {proj.status}
-                      </span>
                     </div>
                   );
                 })

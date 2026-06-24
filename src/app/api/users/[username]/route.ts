@@ -17,7 +17,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ username
     // Fetch projects where user is owner or member
     const projects = await Project.find({
       $or: [{ ownerId: user._id }, { members: user._id }]
-    }).populate('ownerId', 'githubUsername name').sort({ createdAt: -1 });
+    })
+      .populate('ownerId', 'githubUsername name avatarUrl')
+      .populate('members', 'githubUsername name avatarUrl')
+      .sort({ createdAt: -1 });
 
     // Fetch reviews received by this user, populate reviewer and project
     const reviews = await Review.find({ revieweeId: user._id })

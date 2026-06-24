@@ -89,7 +89,7 @@ export default function Navbar() {
               Profile
             </Link>
           )}
-          <Link href="/dashboard" className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${pathname.includes('/project') ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+          <Link href="/projects" className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${pathname === '/projects' ? 'text-white font-bold' : 'text-gray-400 hover:text-white'}`}>
             Project Page
           </Link>
           <Link href="/dashboard" className={`text-sm font-medium px-2 py-1 rounded-md transition-colors ${pathname.includes('workspace') ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
@@ -192,7 +192,7 @@ export default function Navbar() {
                 <Link href={`/profile/${user.githubUsername}`} className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#0366d6] hover:text-white">
                   Your profile
                 </Link>
-                <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#0366d6] hover:text-white">
+                <Link href="/projects" className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#0366d6] hover:text-white">
                   Your projects
                 </Link>
                 <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#0366d6] hover:text-white">
