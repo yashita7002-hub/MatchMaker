@@ -136,6 +136,7 @@ function ProjectCard({ project, role }: { project: Project; role: 'owner' | 'tea
 }
 
 export default function ProjectsPage() {
+  const router = useRouter();
   const { user, loading: authLoading } = useApp();
   const [ownedProjects, setOwnedProjects] = useState<Project[]>([]);
   const [teamProjects, setTeamProjects] = useState<Project[]>([]);
