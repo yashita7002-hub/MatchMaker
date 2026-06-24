@@ -141,6 +141,22 @@ export default function WorkspaceHub() {
   const [reviewedTeammates, setReviewedTeammates] = useState<string[]>([]);
   const [reviewStatusText, setReviewStatusText] = useState('');
 
+  // Remove member state
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [removeMemberTarget, setRemoveMemberTarget] = useState<User | null>(null);
+  const [removeReason, setRemoveReason] = useState('');
+  const [removingMember, setRemovingMember] = useState(false);
+  const [removeStatusText, setRemoveStatusText] = useState('');
+
+  // Today's date for restricting due date picker
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  // Helper: find a member's githubUsername by their display name
+  const findUsernameByName = (name: string): string | null => {
+    const member = project?.members.find(m => m.name === name);
+    return member?.githubUsername || null;
+  };
+
   // Analytics state
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
@@ -527,6 +543,52 @@ export default function WorkspaceHub() {
 
   const totalExpenseSum = expenses.reduce((sum, item) => sum + item.amount, 0);
 
+  const handleRemoveMember = async () => {
+    if (!removeMemberTarget || !project) return;
+    try {
+      setRemovingMember(true);
+      setRemoveStatusText('');
+      const res = await fetch(`/api/projects/${projectId}/remove-member`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          memberId: removeMemberTarget._id,
+          reason: removeReason,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        setRemoveStatusText(`${removeMemberTarget.name} has been removed.`);
+        // Emit real-time notification to the removed member
+        if (json.notification) {
+          socketRef.current?.emit('notify-users', { 
+            userIds: [removeMemberTarget._id], 
+            notification: json.notification 
+          });
+        }
+        // Emit to remaining members
+        if (json.remainingNotifications) {
+          json.remainingNotifications.forEach((n: any) => {
+            socketRef.current?.emit('notify-users', { userIds: [n.userId], notification: n });
+          });
+        }
+        setTimeout(() => {
+          setShowRemoveModal(false);
+          setRemoveMemberTarget(null);
+          setRemoveReason('');
+          setRemoveStatusText('');
+          fetchWorkspaceData();
+        }, 1500);
+      } else {
+        setRemoveStatusText(`Error: ${json.error}`);
+      }
+    } catch (err) {
+      setRemoveStatusText('Network error. Could not remove member.');
+    } finally {
+      setRemovingMember(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center py-32 text-indigo-400">
@@ -588,15 +650,20 @@ export default function WorkspaceHub() {
           {/* Member Avatars */}
           <div className="flex -space-x-2 mr-4">
             {project.members.map((m) => (
-              m.avatarUrl ? 
-              <img key={m._id} src={m.avatarUrl} alt={m.name} className="w-8 h-8 rounded-full border-2 border-[#0d1117]" /> :
-              <div key={m._id} className="w-8 h-8 rounded-full border-2 border-[#0d1117] bg-[#8b5cf6] text-white flex items-center justify-center text-xs font-bold">
-                {m.name.substring(0, 2).toUpperCase()}
-              </div>
+              <Link key={m._id} href={`/profile/${m.githubUsername}`} title={m.name}>
+                {m.avatarUrl ? 
+                <img src={m.avatarUrl} alt={m.name} className="w-8 h-8 rounded-full border-2 border-[#0d1117] hover:border-[#58a6ff] transition-colors cursor-pointer" /> :
+                <div className="w-8 h-8 rounded-full border-2 border-[#0d1117] bg-[#8b5cf6] text-white flex items-center justify-center text-xs font-bold hover:border-[#58a6ff] transition-colors cursor-pointer">
+                  {m.name.substring(0, 2).toUpperCase()}
+                </div>}
+              </Link>
             ))}
           </div>
           {user?._id === project.ownerId._id && project.status !== 'Completed' && project.status !== 'Archived' && (
             <div className="flex gap-2">
+              <button onClick={() => setShowRemoveModal(true)} className="px-3 py-1.5 rounded-md bg-[#f85149]/10 border border-[#f85149]/30 text-[#f85149] text-sm font-semibold hover:bg-[#f85149]/20 transition-colors">
+                Manage Team
+              </button>
               {project.status === 'Active' && (
                 <button onClick={() => handleUpdateProjectStatus('Completed')} className="px-3 py-1.5 rounded-md bg-[#2ea043]/10 border border-[#2ea043]/30 text-[#2ea043] text-sm font-semibold hover:bg-[#2ea043]/20 transition-colors">
                   Complete Project
@@ -642,17 +709,32 @@ export default function WorkspaceHub() {
               ) : (
                 messages.map((msg, idx) => {
                   const isMe = user?.name === msg.senderName;
+                  const senderUsername = findUsernameByName(msg.senderName);
                   return (
                     <div key={msg._id || idx} className={`flex gap-4 ${isMe ? 'flex-row-reverse' : 'flex-row'} items-start`}>
-                      {msg.senderAvatar ? 
-                        <img src={msg.senderAvatar} alt={msg.senderName} className="w-10 h-10 rounded-full border border-[#30363d]" /> :
-                        <div className="w-10 h-10 rounded-full border border-[#30363d] bg-[#8b5cf6] text-white flex items-center justify-center font-bold text-sm">
-                          {msg.senderName.substring(0, 2).toUpperCase()}
-                        </div>
-                      }
+                      {senderUsername ? (
+                        <Link href={`/profile/${senderUsername}`} className="flex-shrink-0">
+                          {msg.senderAvatar ? 
+                            <img src={msg.senderAvatar} alt={msg.senderName} className="w-10 h-10 rounded-full border border-[#30363d] hover:border-[#58a6ff] transition-colors" /> :
+                            <div className="w-10 h-10 rounded-full border border-[#30363d] bg-[#8b5cf6] text-white flex items-center justify-center font-bold text-sm hover:border-[#58a6ff] transition-colors">
+                              {msg.senderName.substring(0, 2).toUpperCase()}
+                            </div>
+                          }
+                        </Link>
+                      ) : (
+                        msg.senderAvatar ? 
+                          <img src={msg.senderAvatar} alt={msg.senderName} className="w-10 h-10 rounded-full border border-[#30363d]" /> :
+                          <div className="w-10 h-10 rounded-full border border-[#30363d] bg-[#8b5cf6] text-white flex items-center justify-center font-bold text-sm">
+                            {msg.senderName.substring(0, 2).toUpperCase()}
+                          </div>
+                      )}
                       <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[70%] gap-1`}>
                         <div className="flex items-baseline gap-2">
-                          <span className="text-xs font-bold text-gray-400">{msg.senderName}</span>
+                          {senderUsername ? (
+                            <Link href={`/profile/${senderUsername}`} className="text-xs font-bold text-gray-400 hover:text-[#58a6ff] transition-colors">{msg.senderName}</Link>
+                          ) : (
+                            <span className="text-xs font-bold text-gray-400">{msg.senderName}</span>
+                          )}
                           <span className="text-[10px] text-gray-600">{new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                         </div>
                         <div className={`px-4 py-2.5 text-sm ${isMe ? 'bg-[#1f6feb]/20 text-[#c9d1d9] border border-[#1f6feb]/30 rounded-2xl rounded-tr-sm' : 'bg-[#161b22] text-[#c9d1d9] border border-[#30363d] rounded-2xl rounded-tl-sm'}`}>
@@ -1168,7 +1250,7 @@ export default function WorkspaceHub() {
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-gray-400">Due Date</label>
-                <input type="date" className="bg-[#0d1117] border border-[#30363d] text-gray-300 px-4 py-2.5 rounded-lg outline-none focus:border-[#58a6ff]" value={taskDueDate} onChange={(e) => setTaskDueDate(e.target.value)} />
+                <input type="date" min={todayStr} className="bg-[#0d1117] border border-[#30363d] text-gray-300 px-4 py-2.5 rounded-lg outline-none focus:border-[#58a6ff]" value={taskDueDate} onChange={(e) => setTaskDueDate(e.target.value)} />
               </div>
 
               <div className="flex justify-end gap-3 mt-2">
@@ -1285,6 +1367,61 @@ export default function WorkspaceHub() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Remove Member Modal */}
+      {showRemoveModal && (
+        <div className="fixed inset-0 bg-[#0d1117]/80 backdrop-blur-sm z-[1000] flex items-center justify-center p-4">
+          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-8 flex flex-col gap-6">
+            <h2 className="text-xl font-bold text-white">Manage Team</h2>
+            
+            {removeStatusText && (
+              <div className={`p-3 rounded-lg text-sm border ${removeStatusText.includes('successfully') || removeStatusText.includes('removed') ? 'bg-[#2ea043]/10 border-[#2ea043]/30 text-[#2ea043]' : 'bg-[#f85149]/10 border-[#f85149]/30 text-[#ff7b72]'}`}>
+                {removeStatusText}
+              </div>
+            )}
+
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-400">Select Teammate to Remove</label>
+                <select 
+                  className="bg-[#0d1117] border border-[#30363d] text-white px-4 py-2.5 rounded-lg outline-none focus:border-[#f85149]" 
+                  onChange={(e) => {
+                    const memberId = e.target.value;
+                    const member = project?.members.find(m => m._id === memberId);
+                    setRemoveMemberTarget(member || null);
+                  }}
+                  value={removeMemberTarget?._id || ''}
+                >
+                  <option value="">-- Select teammate --</option>
+                  {project?.members.filter(m => m._id !== user?._id).map(member => (
+                    <option key={member._id} value={member._id}>{member.name}</option>
+                  ))}
+                </select>
+              </div>
+              
+              {removeMemberTarget && (
+                <div className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200">
+                  <label className="text-sm font-medium text-gray-400">Reason for Removal (Optional, will be sent in notification)</label>
+                  <textarea 
+                    className="bg-[#0d1117] border border-[#30363d] text-white px-4 py-2.5 rounded-lg outline-none focus:border-[#f85149]" 
+                    rows={3} 
+                    placeholder="e.g. Inactivity, project pivoted, etc." 
+                    value={removeReason} 
+                    onChange={(e) => setRemoveReason(e.target.value)} 
+                  />
+                </div>
+              )}
+
+              <div className="flex justify-end gap-3 mt-2">
+                <button type="button" onClick={() => { setShowRemoveModal(false); setRemoveMemberTarget(null); setRemoveReason(''); setRemoveStatusText(''); }} className="btn-secondary">Cancel</button>
+                <button type="button" onClick={handleRemoveMember} disabled={!removeMemberTarget || removingMember} className="px-4 py-2 rounded-lg bg-[#f85149] hover:bg-[#d1242f] text-white font-semibold transition-colors disabled:opacity-50">
+                  {removingMember ? 'Removing...' : 'Remove Member'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
