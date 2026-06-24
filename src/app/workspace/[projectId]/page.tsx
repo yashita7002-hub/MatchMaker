@@ -141,6 +141,29 @@ export default function WorkspaceHub() {
   const [reviewedTeammates, setReviewedTeammates] = useState<string[]>([]);
   const [reviewStatusText, setReviewStatusText] = useState('');
 
+  // Analytics state
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsError, setAnalyticsError] = useState<string | null>(null);
+
+  const fetchAnalytics = async () => {
+    try {
+      setAnalyticsLoading(true);
+      setAnalyticsError(null);
+      const res = await fetch(`/api/projects/${projectId}/analytics`);
+      if (res.ok) {
+        const json = await res.json();
+        setAnalyticsData(json);
+      } else {
+        setAnalyticsError('Failed to load analytics');
+      }
+    } catch (err: any) {
+      setAnalyticsError(err.message);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
+
   const fetchWorkspaceData = async () => {
     try {
       const res = await fetch(`/api/workspace/${projectId}`);
@@ -160,6 +183,12 @@ export default function WorkspaceHub() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (activeTab === 'analytics') {
+      fetchAnalytics();
+    }
+  }, [activeTab, projectId]);
 
   useEffect(() => {
     if (user && projectId) {
@@ -963,15 +992,152 @@ export default function WorkspaceHub() {
 
         {/* Analytics Tab */}
         {activeTab === 'analytics' && (
-          <div className="flex flex-col gap-6">
-            <Link href={`/workspace/${projectId}/analytics`} className="inline-flex items-center gap-2 px-4 py-2 bg-[#1f6feb]/10 border border-[#1f6feb]/30 text-[#58a6ff] rounded-lg hover:bg-[#1f6feb]/20 transition-colors w-max">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              View Full Dashboard
-            </Link>
-            <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6 text-center text-gray-400">
-              <p className="mb-3">📊 Analytics Dashboard Available</p>
-              <p className="text-sm">Click the button above to view comprehensive project analytics including team activity, task completion rates, contributor statistics, expense trends, and more.</p>
-            </div>
+          <div className="flex flex-col gap-6 w-full">
+            {analyticsLoading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="flex flex-col items-center gap-3">
+                  <svg className="animate-spin h-8 w-8 text-[#58a6ff]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span className="text-[#8b949e]">Loading analytics...</span>
+                </div>
+              </div>
+            ) : analyticsError ? (
+              <div className="bg-[#3d2621] border border-[#9e6a03] rounded-lg p-4 text-[#ff7b72]">
+                <p className="font-semibold">Error loading analytics</p>
+                <p className="text-sm text-gray-400 mt-1">{analyticsError}</p>
+                <button onClick={fetchAnalytics} className="mt-3 px-3 py-1.5 bg-[#58a6ff]/10 border border-[#58a6ff]/30 text-[#58a6ff] text-xs rounded hover:bg-[#58a6ff]/20 transition-colors">
+                  Retry
+                </button>
+              </div>
+            ) : analyticsData?.analytics ? (
+              <>
+                {/* Metrics Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 hover:border-[#58a6ff]/40 transition-colors">
+                    <div className="text-xs text-[#8b949e] font-semibold uppercase tracking-wide mb-2">Project Progress</div>
+                    <div className="flex items-end justify-between">
+                      <div className="text-2xl font-bold text-white">{analyticsData.analytics.projectProgress}%</div>
+                      <span className="text-[#58a6ff] text-xs">${analyticsData.analytics.totalExpenses.toFixed(0)}</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-[#0d1117] rounded-full mt-3 overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-[#58a6ff] to-[#1f6feb]" style={{width: `${analyticsData.analytics.projectProgress}%`}}></div>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 hover:border-[#58a6ff]/40 transition-colors">
+                    <div className="text-xs text-[#8b949e] font-semibold uppercase tracking-wide mb-2">Task Completion</div>
+                    <div className="text-2xl font-bold text-white">{analyticsData.analytics.taskCompletionRate}%</div>
+                    <div className="text-xs text-[#8b949e] mt-2">{analyticsData.analytics.completedTasks} of {analyticsData.analytics.totalTasks} tasks</div>
+                  </div>
+
+                  <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 hover:border-[#58a6ff]/40 transition-colors">
+                    <div className="text-xs text-[#8b949e] font-semibold uppercase tracking-wide mb-2">Team Activity</div>
+                    <div className="text-2xl font-bold text-white">{analyticsData.analytics.teamActivityCount}</div>
+                    <div className="text-xs text-[#8b949e] mt-2">actions this week</div>
+                  </div>
+
+                  <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 hover:border-[#58a6ff]/40 transition-colors">
+                    <div className="text-xs text-[#8b949e] font-semibold uppercase tracking-wide mb-2">Expenses</div>
+                    <div className="text-2xl font-bold text-[#79c0ff]">${analyticsData.analytics.totalExpenses.toFixed(2)}</div>
+                    <div className="text-xs text-[#8b949e] mt-2">total spent</div>
+                  </div>
+                </div>
+
+                {/* Task Distribution */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
+                    <h3 className="text-sm font-semibold text-white mb-4">📋 Task Status Distribution</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#2ea043'}}></div>
+                          <span className="text-sm text-[#c9d1d9]">Done</span>
+                        </div>
+                        <span className="font-semibold text-white">{analyticsData.analytics.completedTasks}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#ff7b72'}}></div>
+                          <span className="text-sm text-[#c9d1d9]">In Progress</span>
+                        </div>
+                        <span className="font-semibold text-white">{analyticsData.analytics.inProgressTasks}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#58a6ff'}}></div>
+                          <span className="text-sm text-[#c9d1d9]">To Do</span>
+                        </div>
+                        <span className="font-semibold text-white">{analyticsData.analytics.todoTasks}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full" style={{backgroundColor: '#d29922'}}></div>
+                          <span className="text-sm text-[#c9d1d9]">In Review</span>
+                        </div>
+                        <span className="font-semibold text-white">{analyticsData.analytics.reviewTasks}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
+                    <h3 className="text-sm font-semibold text-white mb-4">💬 Team Engagement</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-2 bg-[#0d1117] rounded">
+                        <span className="text-sm text-[#8b949e]">Discussions</span>
+                        <span className="font-semibold text-[#79c0ff]">{analyticsData.analytics.discussionCount}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 bg-[#0d1117] rounded">
+                        <span className="text-sm text-[#8b949e]">Messages</span>
+                        <span className="font-semibold text-[#79c0ff]">{analyticsData.analytics.messageCount}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-2 bg-[#0d1117] rounded">
+                        <span className="text-sm text-[#8b949e]">Team Members</span>
+                        <span className="font-semibold text-[#79c0ff]">{project?.members.length || 0}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Top Contributors */}
+                {analyticsData.topContributors && analyticsData.topContributors.length > 0 && (
+                  <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-4">
+                    <h3 className="text-sm font-semibold text-white mb-4">⭐ Top Contributors</h3>
+                    <div className="space-y-2">
+                      {analyticsData.topContributors.map((contributor: any, idx: number) => (
+                        <div key={idx} className="flex items-center gap-3 p-3 bg-[#0d1117] rounded hover:bg-[#161b22] transition-colors">
+                          <div className="w-6 h-6 rounded-full bg-[#30363d] flex items-center justify-center text-xs font-bold text-[#79c0ff]">
+                            {idx + 1}
+                          </div>
+                          <img src={contributor.userId.avatarUrl} alt={contributor.userId.name} className="w-8 h-8 rounded-full border border-[#30363d]" />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-semibold text-white truncate">{contributor.userId.name}</div>
+                            <div className="text-xs text-[#8b949e] truncate">@{contributor.userId.githubUsername}</div>
+                          </div>
+                          <div className="flex gap-3 text-xs text-[#8b949e]">
+                            <span>✓ {contributor.tasksCompleted}</span>
+                            <span>💬 {contributor.messagesCount}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Quick Refresh */}
+                <div className="flex gap-2">
+                  <button onClick={fetchAnalytics} className="px-4 py-2 bg-[#1f6feb]/10 border border-[#1f6feb]/30 text-[#58a6ff] text-sm rounded-lg hover:bg-[#1f6feb]/20 transition-colors flex items-center gap-2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36M20.49 15a9 9 0 0 1-14.85 3.36"></path></svg>
+                    Refresh
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-6 text-center">
+                <p className="text-[#8b949e] text-sm">No analytics data available yet. Complete some tasks, create discussions, or log expenses to see analytics.</p>
+              </div>
+            )}
           </div>
         )}
 
