@@ -900,7 +900,7 @@ export default function WorkspaceHub() {
                 + Add Task
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-1 items-start">
+            <div className="flex md:grid md:grid-cols-4 gap-4 flex-1 items-start overflow-x-auto snap-x pb-4">
               {(['todo', 'in_progress', 'review', 'done'] as const).map(col => {
                 const colTasks = tasks.filter(t => t.status === col);
                 const colTitle = col === 'todo' ? 'To Do' : col === 'in_progress' ? 'In Progress' : col === 'review' ? 'In Review' : 'Done';
@@ -908,7 +908,7 @@ export default function WorkspaceHub() {
                 const colBorderColor = col === 'todo' ? 'border-[#30363d]' : col === 'in_progress' ? 'border-[#1f6feb]/40' : col === 'review' ? 'border-[#9e6a03]/40' : 'border-[#2ea043]/40';
                 const colBg = col === 'todo' ? 'bg-[#161b22]' : col === 'in_progress' ? 'bg-[#161b22]' : col === 'review' ? 'bg-[#161b22]' : 'bg-[#161b22]';
                 return (
-                  <div key={col} className={`${colBg} border ${colBorderColor} rounded-xl p-4 flex flex-col gap-3 min-h-[400px]`}>
+                  <div key={col} className={`${colBg} border ${colBorderColor} rounded-xl p-4 flex flex-col gap-3 min-h-[400px] min-w-[85vw] md:min-w-0 snap-center`}>
                     <div className="flex justify-between items-center mb-2 pb-2 border-b border-[#30363d]">
                       <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colColor }}></div>
@@ -1228,7 +1228,7 @@ export default function WorkspaceHub() {
       {/* Task Modal */}
       {showTaskModal && (
         <div className="fixed inset-0 bg-[#0d1117]/80 backdrop-blur-sm z-[1000] flex items-center justify-center p-4">
-          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-8 flex flex-col gap-6">
+          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-6 md:p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold text-white">Create New Project Task</h2>
             <form onSubmit={handleCreateTask} className="flex flex-col gap-5">
               <div className="flex flex-col gap-1.5">
@@ -1267,7 +1267,7 @@ export default function WorkspaceHub() {
       {/* Thread Modal */}
       {showThreadModal && (
         <div className="fixed inset-0 bg-[#0d1117]/80 backdrop-blur-sm z-[1000] flex items-center justify-center p-4">
-          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-8 flex flex-col gap-6">
+          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-6 md:p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold text-white">Start Discussion Thread</h2>
             <form onSubmit={handleCreateThread} className="flex flex-col gap-5">
               <div className="flex flex-col gap-1.5">
@@ -1298,7 +1298,7 @@ export default function WorkspaceHub() {
       {/* Expense Modal */}
       {showExpenseModal && (
         <div className="fixed inset-0 bg-[#0d1117]/80 backdrop-blur-sm z-[1000] flex items-center justify-center p-4">
-          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-8 flex flex-col gap-6">
+          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-6 md:p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold text-white">Log Project Expense</h2>
             <form onSubmit={handleLogExpense} className="flex flex-col gap-5">
               <div className="flex flex-col gap-1.5">
@@ -1338,7 +1338,7 @@ export default function WorkspaceHub() {
       {/* Vault Link Modal */}
       {showVaultModal && (
         <div className="fixed inset-0 bg-[#0d1117]/80 backdrop-blur-sm z-[1000] flex items-center justify-center p-4">
-          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-8 flex flex-col gap-6">
+          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-6 md:p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold text-white">Add Vault Link</h2>
             <form onSubmit={handleAddVaultLink} className="flex flex-col gap-5">
               <div className="flex flex-col gap-1.5">
@@ -1374,7 +1374,7 @@ export default function WorkspaceHub() {
       {/* Remove Member Modal */}
       {showRemoveModal && (
         <div className="fixed inset-0 bg-[#0d1117]/80 backdrop-blur-sm z-[1000] flex items-center justify-center p-4">
-          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-8 flex flex-col gap-6">
+          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-6 md:p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold text-white">Manage Team</h2>
             
             {removeStatusText && (

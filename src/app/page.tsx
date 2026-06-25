@@ -387,17 +387,17 @@ export default function Home() {
 
       {/* ── STATS BAR ─────────────────────────────────────────── */}
       <section ref={statsRef} className="w-full border-y border-[#30363d] bg-[#161b22]/60 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 py-6 grid grid-cols-3 gap-6 text-center">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 grid grid-cols-3 gap-2 md:gap-6 text-center">
           {[
             { label: 'Projects Listed', value: stats.total, suffix: '+', color: 'text-white' },
             { label: 'Recruiting Now', value: stats.recruiting, suffix: '', color: 'text-blue-400' },
             { label: 'Active Members', value: stats.members, suffix: '+', color: 'text-emerald-400' },
           ].map(({ label, value, suffix, color }) => (
             <div key={label} className="flex flex-col items-center gap-1">
-              <span className={`text-3xl md:text-4xl font-extrabold tabular-nums ${color}`}>
+              <span className={`text-2xl md:text-4xl font-extrabold tabular-nums ${color}`}>
                 {statsAnimated ? value : 0}{suffix}
               </span>
-              <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">{label}</span>
+              <span className="text-[10px] md:text-xs text-gray-500 uppercase tracking-wider font-medium">{label}</span>
             </div>
           ))}
         </div>

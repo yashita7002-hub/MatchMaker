@@ -618,7 +618,7 @@ export default function Dashboard() {
       {/* Edit Project Modal */}
       {editingProject && (
         <div className="fixed inset-0 bg-[#0d1117]/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-6 md:p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold text-white">Edit Project</h2>
               <button onClick={() => setEditingProject(null)} className="text-gray-500 hover:text-white">
@@ -679,7 +679,7 @@ export default function Dashboard() {
       {/* AI Recommendations Modal */}
       {recommendationsProject && (
         <div className="fixed inset-0 bg-[#0d1117]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6">
-          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-4xl rounded-2xl p-8 relative flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-4xl rounded-2xl p-6 md:p-8 relative flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
             <button onClick={() => setRecommendationsProject(null)} className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors">
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />

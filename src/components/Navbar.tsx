@@ -20,6 +20,7 @@ export default function Navbar() {
   const router = useRouter();
   const { user, logout, notifications, unreadCount, markNotificationsAsRead } = useApp();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,6 +32,14 @@ export default function Navbar() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [mobileMenuOpen]);
 
   const handleLogout = async () => {
     await logout();
@@ -56,8 +65,19 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-[#0d1117] border-b border-[#30363d] px-6 py-3 flex justify-between items-center transition-all duration-300">
-      <div className="flex items-center gap-6">
+    <nav className="sticky top-0 z-50 bg-[#0d1117] border-b border-[#30363d] px-4 md:px-6 py-3 flex justify-between items-center transition-all duration-300">
+      <div className="flex items-center gap-4 md:gap-6">
+        <button 
+          className="lg:hidden text-gray-400 hover:text-white" 
+          onClick={() => setMobileMenuOpen(true)}
+          aria-label="Open Menu"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
         <Link href="/" className="flex items-center gap-2 text-xl font-bold text-white hover:text-gray-300 transition-colors">
           <div className="bg-[#2ea043] p-1.5 rounded-md">
             <svg className="text-white" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -214,6 +234,54 @@ export default function Navbar() {
           </Link>
         )}
       </div>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-[60] bg-[#0d1117]/95 backdrop-blur-sm lg:hidden flex flex-col p-6 animate-in fade-in duration-200">
+          <div className="flex justify-between items-center mb-8">
+            <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 text-xl font-bold text-white">
+              <div className="bg-[#2ea043] p-1.5 rounded-md">
+                <svg className="text-white" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+              <span>ProjectMatch</span>
+            </Link>
+            <button 
+              className="text-gray-400 hover:text-white" 
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          
+          <div className="flex flex-col gap-6">
+            <Link href="/" onClick={() => setMobileMenuOpen(false)} className={`text-xl font-medium ${pathname === '/' ? 'text-white' : 'text-gray-400'}`}>
+              Home
+            </Link>
+            <Link href="/dashboard" onClick={(e) => { handleProtectedNav(e); setMobileMenuOpen(false); }} className={`text-xl font-medium ${pathname === '/dashboard' ? 'text-white' : 'text-gray-400'}`}>
+              Explore
+            </Link>
+            {user && (
+              <Link href={`/profile/${user.githubUsername}`} onClick={() => setMobileMenuOpen(false)} className={`text-xl font-medium ${pathname.startsWith('/profile') ? 'text-white' : 'text-gray-400'}`}>
+                Profile
+              </Link>
+            )}
+            <Link href="/projects" onClick={(e) => { handleProtectedNav(e); setMobileMenuOpen(false); }} className={`text-xl font-medium ${pathname === '/projects' ? 'text-white' : 'text-gray-400'}`}>
+              Project Page
+            </Link>
+            <Link href="/dashboard" onClick={(e) => { handleProtectedNav(e); setMobileMenuOpen(false); }} className={`text-xl font-medium ${pathname.includes('workspace') ? 'text-white' : 'text-gray-400'}`}>
+              Team Hub
+            </Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

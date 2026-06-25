@@ -201,24 +201,24 @@ export default function Profile() {
         {/* ─── LEFT SIDEBAR ───────────────────────────────────── */}
         <aside className="w-full md:w-[260px] flex-shrink-0 flex flex-col gap-5">
           {/* Avatar */}
-          <div className="relative">
+          <div className="relative w-32 md:w-full md:max-w-[260px] mx-auto md:mx-0">
             {profile.avatarUrl ? (
-              <img src={profile.avatarUrl} alt={profile.name} className="w-full max-w-[260px] rounded-full border-4 border-[#30363d] shadow-[0_0_30px_rgba(88,166,255,0.08)] aspect-square object-cover" />
+              <img src={profile.avatarUrl} alt={profile.name} className="w-full rounded-full border-4 border-[#30363d] shadow-[0_0_30px_rgba(88,166,255,0.08)] aspect-square object-cover" />
             ) : (
-              <div className="w-full max-w-[260px] aspect-square rounded-full bg-[#8b5cf6] flex items-center justify-center text-5xl font-bold text-white border-4 border-[#30363d]">
+              <div className="w-full aspect-square rounded-full bg-[#8b5cf6] flex items-center justify-center text-4xl md:text-5xl font-bold text-white border-4 border-[#30363d]">
                 {profile.name.substring(0, 2).toUpperCase()}
               </div>
             )}
           </div>
 
           {/* Name & Handle */}
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 text-center md:text-left">
             <h1 className="text-2xl font-bold text-white leading-tight">{profile.name}</h1>
             <p className="text-lg text-gray-400 font-normal">{profile.githubUsername}</p>
           </div>
 
           {/* Status badge */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center md:justify-start gap-2">
             <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: getStatusDot(profile.status) }} />
             <span className={`text-sm font-medium ${getStatusColor(profile.status)}`}>{profile.status}</span>
           </div>
@@ -525,7 +525,7 @@ export default function Profile() {
       {/* ─── EDIT PROFILE MODAL ─────────────────────────────── */}
       {isOwnProfile && isEditing && (
         <div className="fixed inset-0 bg-[#0d1117]/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#161b22] border border-[#30363d] w-full max-w-lg rounded-2xl p-6 md:p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold text-white">Edit Profile</h2>
               <button onClick={() => setIsEditing(false)} className="text-gray-500 hover:text-white">
