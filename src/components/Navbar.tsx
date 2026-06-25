@@ -144,7 +144,7 @@ export default function Navbar() {
           </button>
 
           {user && showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 bg-[#161b22] border border-[#30363d] rounded-md shadow-lg py-2 z-50">
+            <div className="absolute right-[-1rem] sm:right-0 mt-3 sm:mt-2 w-[calc(100vw-2rem)] sm:w-80 bg-[#161b22] border border-[#30363d] sm:rounded-md shadow-2xl sm:shadow-lg py-2 z-[60]">
               <div className="px-4 py-2 border-b border-[#30363d] flex justify-between items-center">
                 <h3 className="text-sm font-semibold text-white">Notifications</h3>
                 {unreadCount > 0 && (
