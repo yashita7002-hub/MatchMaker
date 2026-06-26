@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
+import { useSearchParams } from 'next/navigation';
 
 interface Project {
   _id: string;
@@ -126,11 +127,12 @@ const HOW_IT_WORKS = [
 
 export default function Home() {
   const { user } = useApp();
+  const searchParams = useSearchParams();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [stats, setStats] = useState({ total: 0, recruiting: 0, members: 0 });
   const [statsAnimated, setStatsAnimated] = useState(false);
   const statsRef = useRef<HTMLDivElement>(null);
@@ -151,6 +153,14 @@ export default function Home() {
   const [appStatusText, setAppStatusText] = useState('');
 
   const feedRef = useRef<HTMLDivElement>(null);
+
+  // Sync searchQuery with URL params
+  useEffect(() => {
+    const searchParam = searchParams.get('search');
+    if (searchParam !== null) {
+      setSearchQuery(searchParam);
+    }
+  }, [searchParams]);
 
   const fetchProjects = async () => {
     try {

@@ -21,7 +21,10 @@ export default function Navbar() {
   const { user, logout, notifications, unreadCount, markNotificationsAsRead } = useApp();
   const [showNotifications, setShowNotifications] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -40,6 +43,29 @@ export default function Navbar() {
       document.body.style.overflow = 'unset';
     }
   }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Focus search input when "/" is pressed (if not typing in another input)
+      if (e.key === '/' && !searchFocused) {
+        const activeElement = document.activeElement;
+        const isInputFocused = activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement;
+        
+        if (!isInputFocused) {
+          e.preventDefault();
+          searchInputRef.current?.focus();
+        }
+      }
+      // Clear search and blur input on Escape
+      if (e.key === 'Escape' && searchFocused) {
+        setSearchQuery('');
+        searchInputRef.current?.blur();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [searchFocused]);
 
   const handleLogout = async () => {
     await logout();
@@ -62,6 +88,17 @@ export default function Navbar() {
       e.preventDefault();
       router.push('/login');
     }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
   return (
@@ -94,14 +131,21 @@ export default function Navbar() {
           <svg className="absolute left-3 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input 
-            type="text" 
-            placeholder="Search projects, users..." 
-            className="bg-[#0d1117] border border-[#30363d] text-sm text-gray-300 rounded-md pl-9 pr-8 py-1.5 focus:outline-none focus:border-[#58a6ff] w-64 transition-colors"
-          />
-          <div className="absolute right-2 px-1.5 border border-[#30363d] rounded text-xs text-gray-500">
-            /
-          </div>
+          <form onSubmit={handleSearch} className="flex items-center">
+            <input 
+              ref={searchInputRef}
+              type="text" 
+              placeholder="Search projects, users..." 
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              className="bg-[#0d1117] border border-[#30363d] text-sm text-gray-300 rounded-md pl-9 pr-8 py-1.5 focus:outline-none focus:border-[#58a6ff] w-64 transition-colors"
+            />
+            <div className="absolute right-2 px-1.5 border border-[#30363d] rounded text-xs text-gray-500 pointer-events-none">
+              /
+            </div>
+          </form>
         </div>
 
         <div className="hidden lg:flex items-center gap-4 ml-2">
