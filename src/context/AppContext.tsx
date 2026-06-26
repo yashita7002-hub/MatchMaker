@@ -36,7 +36,6 @@ interface AppContextType {
   loading: boolean;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
-  loginMock: (username: string) => Promise<boolean>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   notifications: NotificationItem[];
@@ -63,11 +62,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     refreshUser();
   }, []);
 
-  const fetchNotifications = async (userId: string) => {
+  const fetchNotifications = async () => {
     try {
       const res = await fetch('/api/notifications', {
-        credentials: 'include',
-        headers: { 'X-User-Id': userId }
+        credentials: 'include'
       });
       if (res.ok) {
         const data = await res.json();
@@ -80,7 +78,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (user) {
-      fetchNotifications(user._id);
+      fetchNotifications();
 
       if (!socketRef.current) {
         socketRef.current = io();
@@ -137,26 +135,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const loginMock = async (username: string): Promise<boolean> => {
-    try {
-      const res = await fetch('/api/auth/mock', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.user);
-        return true;
-      }
-      return false;
-    } catch (err) {
-      console.error('Mock login failed:', err);
-      return false;
-    }
-  };
-
   const logout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
@@ -173,8 +151,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         method: 'PUT',
         credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': user._id
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(id ? { notificationId: id } : {})
       });
@@ -191,7 +168,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AppContext.Provider value={{ 
-      user, loading, theme, toggleTheme, loginMock, logout, refreshUser,
+      user, loading, theme, toggleTheme, logout, refreshUser,
       notifications, unreadCount, markNotificationsAsRead, globalSocket: socketRef.current
     }}>
       {children}
