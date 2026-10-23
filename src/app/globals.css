@@ -1,64 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
-@layer base {
-  :root {
-    --background: #0d1117;
-    --foreground: #c9d1d9;
-  }
-  
-  body {
-    @apply bg-[#0d1117] text-[#c9d1d9] font-sans antialiased selection:bg-primary/30;
-  }
-}
-
-@layer components {
-  .glass-panel {
-    @apply bg-[#0d1117] border border-[#30363d] rounded-xl;
-  }
-  
-  .glass-card {
-    @apply bg-[#161b22] border border-[#30363d] rounded-xl transition-all duration-200 hover:border-[#8b949e];
-  }
-  
-  .text-gradient {
-    @apply text-white font-semibold;
-  }
-
-  .btn-primary {
-    @apply flex items-center justify-center gap-2 px-4 py-2 bg-[#238636] text-white font-medium rounded-md transition-all hover:bg-[#2ea043] active:scale-[0.98] border border-[rgba(255,255,255,0.1)] shadow-sm;
-  }
-
-  .btn-secondary {
-    @apply flex items-center justify-center gap-2 px-4 py-2 bg-[#21262d] border border-[#30363d] text-[#c9d1d9] font-medium rounded-md transition-all hover:bg-[#30363d] hover:border-[#8b949e] active:scale-[0.98] shadow-sm;
-  }
-
-  .github-link {
-    @apply text-[#58a6ff] hover:text-[#79c0ff] hover:underline transition-colors;
-  }
-
-  .github-badge {
-    @apply bg-[#1f6feb]/10 text-[#58a6ff] border border-[#1f6feb]/30;
-  }
-
-  .github-input {
-    @apply bg-[#0d1117] border border-[#30363d] text-[#c9d1d9] px-3.5 py-2.5 rounded-md outline-none focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff] transition-all placeholder:text-gray-500;
-  }
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #0d1117;
-}
-::-webkit-scrollbar-thumb {
-  background: #30363d;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #8b949e;
-}
+@import "../styles/tokens.css";
+@import "../styles/landing-hero.css";
+@import "../styles/landing-discovery.css";
+@import "../styles/landing-why.css";
+@import "../styles/landing-features.css";
+@import "../styles/landing-widgets.css";
+@import "../styles/landing-responsive.css";
+@import "../styles/feed.css";
+@import "../styles/project-detail.css";

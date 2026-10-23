@@ -4,6 +4,7 @@ export interface IInvitation extends Document {
   projectId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   role: string;
+  message?: string;
   status: 'Pending' | 'Accepted' | 'Declined';
   createdAt: Date;
   updatedAt: Date;
@@ -13,6 +14,7 @@ const InvitationSchema: Schema = new Schema({
   projectId: { type: Schema.Types.ObjectId, ref: 'Project', required: true, index: true },
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   role: { type: String, required: true },
+  message: { type: String, default: '' },
   status: {
     type: String,
     enum: ['Pending', 'Accepted', 'Declined'],

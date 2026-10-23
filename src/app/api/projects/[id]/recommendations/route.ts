@@ -41,7 +41,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const recommendations = await getRecommendations(
       project.requiredSkills,
       project.requiredRoles,
-      uniqueExcludeIds
+      uniqueExcludeIds,
+      { title: project.title, description: project.description }
     );
     
     return NextResponse.json({ success: true, recommendations });

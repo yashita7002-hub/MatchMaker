@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import io, { Socket } from 'socket.io-client';
 
 export interface UserProfile {
@@ -40,7 +40,9 @@ interface AppContextType {
   refreshUser: () => Promise<void>;
   notifications: NotificationItem[];
   unreadCount: number;
+  refreshNotifications: () => Promise<void>;
   markNotificationsAsRead: (id?: string) => Promise<void>;
+  markChatNotificationsAsRead: (target: { conversationId?: string; projectId?: string }) => Promise<void>;
   globalSocket: Socket | null;
 }
 
@@ -52,6 +54,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const socketRef = useRef<Socket | null>(null);
+  const [globalSocket, setGlobalSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
@@ -62,50 +65,59 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     refreshUser();
   }, []);
 
-  const fetchNotifications = async () => {
+  const refreshNotifications = useCallback(async () => {
     try {
       const res = await fetch('/api/notifications', {
         credentials: 'include'
       });
-      if (res.ok) {
-        const data = await res.json();
-        setNotifications(data.notifications || []);
-      }
+      if (!res.ok) throw new Error(`Unable to load notifications (${res.status})`);
+      const data: { notifications?: NotificationItem[] } = await res.json();
+      const fetchedNotifications = data.notifications || [];
+      setNotifications(previous => {
+        const byId = new Map(previous.map(notification => [notification._id, notification]));
+        fetchedNotifications.forEach(notification => byId.set(notification._id, notification));
+        return Array.from(byId.values())
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 50);
+      });
     } catch (err) {
       console.error('Failed to fetch notifications:', err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (user) {
-      fetchNotifications();
-
       if (!socketRef.current) {
         socketRef.current = io();
+        setGlobalSocket(socketRef.current);
       }
-      
-      socketRef.current.emit('register-global', { userId: user._id });
+      const socket = socketRef.current;
+      const registerGlobal = () => socket.emit('register-global');
+      if (socket.connected) registerGlobal();
+      socket.on('connect', registerGlobal);
 
       const handleNewNotification = (notification: NotificationItem) => {
-        setNotifications(prev => [notification, ...prev]);
+        setNotifications(previous => [
+          notification,
+          ...previous.filter(existing => existing._id !== notification._id),
+        ].slice(0, 50));
       };
 
-      socketRef.current.on('new-notification', handleNewNotification);
+      socket.on('new-notification', handleNewNotification);
 
       return () => {
-        if (socketRef.current) {
-          socketRef.current.off('new-notification', handleNewNotification);
-          // Only disconnect if we really want to tear down the socket when user changes, but usually we don't unmount AppProvider
-        }
+        socket.off('connect', registerGlobal);
+        socket.off('new-notification', handleNewNotification);
       };
     } else {
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
+        setGlobalSocket(null);
       }
       setNotifications([]);
     }
-  }, [user]);
+  }, [user, refreshNotifications]);
 
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
@@ -121,6 +133,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const data = await res.json();
         if (data.authenticated) {
           setUser(data.user);
+          void refreshNotifications();
         } else {
           setUser(null);
         }
@@ -147,7 +160,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const markNotificationsAsRead = async (id?: string) => {
     if (!user) return;
     try {
-      await fetch('/api/notifications', {
+      const response = await fetch('/api/notifications', {
         method: 'PUT',
         credentials: 'include',
         headers: {
@@ -155,6 +168,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         },
         body: JSON.stringify(id ? { notificationId: id } : {})
       });
+      if (!response.ok) throw new Error(`Unable to update notifications (${response.status})`);
       
       setNotifications(prev => prev.map(n => 
         (id ? n._id === id : true) ? { ...n, isRead: true } : n
@@ -164,12 +178,42 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const markChatNotificationsAsRead = useCallback(async (target: { conversationId?: string; projectId?: string }) => {
+    if (!user) return;
+    try {
+      const response = await fetch('/api/notifications', {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(target),
+      });
+      if (!response.ok) throw new Error('Unable to update chat notifications');
+      setNotifications(previous => {
+        let changed = false;
+        const next = previous.map(notification => {
+          const matchesConversation = target.conversationId
+            && notification.link === `/messages?conversation=${target.conversationId}`;
+          const matchesProject = target.projectId
+            && notification.link.startsWith(`/workspace/${target.projectId}`);
+          if (!notification.isRead && (matchesConversation || matchesProject)) {
+            changed = true;
+            return { ...notification, isRead: true };
+          }
+          return notification;
+        });
+        return changed ? next : previous;
+      });
+    } catch (error) {
+      console.error('Failed to mark chat notifications as read:', error);
+    }
+  }, [user]);
+
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
     <AppContext.Provider value={{ 
       user, loading, theme, toggleTheme, logout, refreshUser,
-      notifications, unreadCount, markNotificationsAsRead, globalSocket: socketRef.current
+    notifications, unreadCount, refreshNotifications, markNotificationsAsRead, markChatNotificationsAsRead, globalSocket
     }}>
       {children}
     </AppContext.Provider>

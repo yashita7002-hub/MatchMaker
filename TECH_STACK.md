@@ -13,7 +13,7 @@ Project Matchmaker is a GitHub-powered platform for finding teammates, collabora
 - **TypeScript 5** - Type-safe development
 
 ### Backend & Server
-- **Express.js 5.2.1** - Custom server for file uploads and Socket.io integration
+- **Express.js 5.2.1** - Custom Next.js server and Socket.io integration
 - **Node.js** - Runtime environment
 
 ### Database
@@ -30,8 +30,7 @@ Project Matchmaker is a GitHub-powered platform for finding teammates, collabora
 - **Axios 1.18.1** - HTTP client for API requests
 
 ### File Storage
-- **Cloudinary 2.10.0** - Cloud image storage for chat images and avatars
-- **Multer 2.2.0** - File upload middleware with memory storage
+- **Cloudinary 2.10.0** - Server-side chat file storage
 
 ### Styling
 - **Tailwind CSS 3.4.1** - Utility-first CSS framework
@@ -258,9 +257,15 @@ Project Matchmaker is a GitHub-powered platform for finding teammates, collabora
   - `typing-indicator` - Shows who is typing
 - **Features**:
   - Instant message delivery (no page refresh)
-  - Image sharing via Cloudinary upload
+  - Image and document attachments through authenticated Cloudinary uploads
   - Typing indicator bubbles
-  - Message history persistence
+  - Persistent message history, replies, reactions, edits, soft deletion, and read receipts
+
+#### Direct Messages
+- **Route**: `/messages`
+- **Persistence**: `Conversation` records use a sorted participant key to prevent duplicate one-to-one conversations; direct messages share the `Message` model.
+- **Access**: Conversation membership is checked by every API and Socket.io room operation.
+- **Features**: User search, unread counts, online presence, typing, delivery/read status, saved messages, and message notifications.
 
 #### Discussion Boards
 - **Implementation**: Threaded discussion system
@@ -385,11 +390,9 @@ Project Matchmaker is a GitHub-powered platform for finding teammates, collabora
 ## Real-time Features (Socket.io)
 
 ### Server Setup (`server.js`)
-```javascript
-const io = new Server(httpServer, {
-  cors: { origin: '*', methods: ['GET', 'POST'] }
-});
-```
+- Socket connections require the authenticated `session_user_id` cookie.
+- Socket rooms are joined only after checking project membership or direct-conversation participation in MongoDB.
+- Browser origins are restricted to the current host (or the configured `APP_ORIGIN`).
 
 ### Events Implemented
 
@@ -404,6 +407,21 @@ const io = new Server(httpServer, {
 - `receive-message` - Receive message from room
 - `typing-indicator` - Broadcast typing status
 - `typing-update` - Receive typing updates
+- `project-message-updated` - Sync persisted edits, deletions, reactions, and receipts
+
+#### Direct Messages
+- `join-conversation` - Join a direct conversation after membership validation
+- `send-direct-message` / `receive-direct-message` - Broadcast persisted messages
+- `direct-message-updated` - Sync persisted edits, deletions, and reactions
+- `direct-typing` - Typing status for conversation participants
+- `conversation-presence` - Online participants
+
+#### Message API
+- `/api/chat/conversations` - User search and create-or-open direct conversations
+- `/api/chat/conversations/[conversationId]/messages` - Authorized history, read receipts, and send
+- `/api/chat/messages/[messageId]` - Authorized edit, soft-delete, and reaction actions
+- `/api/chat/saved` - Private per-user message bookmarks
+- `/api/chat/upload` and `/api/chat/attachments/download` - Membership-checked attachment upload/download
 
 #### Kanban Board
 - `kanban-drag` - Sync task status changes
@@ -420,6 +438,7 @@ const io = new Server(httpServer, {
 ```
 src/app/api/
 ├── auth/                    # GitHub OAuth
+├── chat/                    # Direct messaging, bookmarks, and file transfer
 ├── applications/            # Project applications
 ├── cron/                    # Scheduled tasks (deadlines)
 ├── dashboard/               # User dashboard data
@@ -440,10 +459,12 @@ src/app/api/
 ```
 
 ### File Upload API
-- **Endpoint**: `POST /api/upload`
-- **Implementation**: Express + Multer memory storage
-- **Storage**: Cloudinary (production) / Base64 (development)
-- **Limit**: 10MB file size
+- **Endpoint**: `POST /api/chat/upload`
+- **Implementation**: Authenticated Next.js API route with file signature, type, and size validation
+- **Storage**: Cloudinary; upload credentials remain server-side
+- **Upload staging**: `ChatUpload` records bind an uploaded file to its authenticated sender and target chat, expire after 24 hours, and are consumed when sent.
+- **Supported**: PNG/JPG/GIF/WEBP, PDF, DOC/DOCX, TXT, CSV (15 MB per file)
+- **Downloads**: Authorized API route returns the original filename; direct Cloudinary URLs are not trusted as authorization
 
 ---
 
@@ -458,6 +479,7 @@ NEXTAUTH_SECRET=          # NextAuth secret
 CLOUDINARY_CLOUD_NAME=    # Cloudinary cloud name
 CLOUDINARY_API_KEY=       # Cloudinary API key
 CLOUDINARY_API_SECRET=    # Cloudinary API secret
+APP_ORIGIN=               # Optional public origin when reverse proxies change the Host header for Socket.io
 CRON_SECRET=             # Cron job authentication
 ```
 

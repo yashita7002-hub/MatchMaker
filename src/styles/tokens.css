@@ -1,0 +1,109 @@
+@layer base {
+  :root {
+    --background: #020617;
+    --foreground: #dae2fd;
+    --surface: #0b1326;
+    --primary: #3b82f6;
+    --secondary: #8b5cf6;
+    --tertiary: #06b6d4;
+
+    /* Semantic tokens mapped directly to existing application palette */
+    --bg: var(--background);
+    --bg-raised: #0b1326;
+    --surface-solid: #0b1326;
+    --surface-light: rgba(15, 23, 42, 0.55);
+    --line: rgba(255, 255, 255, 0.08);
+    --line-bright: rgba(173, 198, 255, 0.35);
+    --text: var(--foreground);
+    --muted: #8c909f;
+    --muted-light: #c2c6d6;
+    --blue: var(--primary);
+    --blue-light: #adc6ff;
+    --cyan: var(--tertiary);
+    --indigo: var(--secondary);
+    --green: #34d399;
+    --radius-sm: 10px;
+    --radius: 18px;
+    --radius-lg: 28px;
+    --shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 84px;
+  }
+
+  body {
+    background-color: #020617;
+    color: #dae2fd;
+    font-family: var(--font-inter), sans-serif;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-outfit), sans-serif;
+    letter-spacing: -0.035em;
+  }
+}
+
+@layer components {
+  /* Cosmic Glass Panels */
+  .glass-panel {
+    background: rgba(11, 19, 38, 0.65);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-card {
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card-hover:hover {
+    transform: translateY(-4px);
+    border-color: rgba(173, 198, 255, 0.35);
+    box-shadow: 0 12px 35px -10px rgba(59, 130, 246, 0.25);
+  }
+
+  .glass-dark {
+    background: rgba(2, 6, 23, 0.7);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .hero-gradient {
+    background: linear-gradient(135deg, #adc6ff 0%, #d0bcff 50%, #4cd7f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .cosmic-gradient {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  }
+
+  .btn-primary {
+    @apply flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] text-white font-medium rounded-xl transition-all hover:opacity-95 hover:shadow-[0_0_20px_rgba(59,130,246,0.35)] active:scale-[0.98] border border-white/10;
+  }
+
+  .btn-secondary {
+    @apply flex items-center justify-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 text-[#dae2fd] font-medium rounded-xl transition-all hover:bg-white/10 hover:border-white/20 active:scale-[0.98];
+  }
+
+  .github-link {
+    @apply text-[#adc6ff] hover:text-[#4cd7f6] hover:underline transition-colors;
+  }
+
+  .github-badge {
+    @apply bg-[#3b82f6]/10 text-[#adc6ff] border border-[#3b82f6]/25;
+  }
+
+  .github-input {
+    @apply bg-black/25 border border-white/10 text-[#dae2fd] px-3.5 py-2.5 rounded-xl outline-none focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6]/40 transition-all placeholder:text-[#8c909f]/60;
+  }
+
+}

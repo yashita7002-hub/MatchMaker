@@ -3,6 +3,8 @@ import connectDB from '@/lib/db';
 import Project from '@/models/Project';
 import { getSessionUser } from '@/lib/auth';
 
+import { setupProjectGitHub } from '@/lib/github';
+
 export async function POST(req: Request) {
   try {
     await connectDB();
@@ -29,7 +31,45 @@ export async function POST(req: Request) {
       members: [user._id], 
     });
 
-    return NextResponse.json({ success: true, project });
+    await project.populate('ownerId', 'githubUsername name avatarUrl trustScore');
+
+    let githubSetupResult: { success: boolean; repositoryUrl?: string; error?: string } | null = null;
+    const githubToken = process.env.GITHUB_TOKEN;
+
+    if (githubToken && user.githubUsername) {
+      try {
+        githubSetupResult = await setupProjectGitHub(
+          project._id.toString(),
+          project.title,
+          project.description,
+          user.githubUsername,
+          githubToken,
+          []
+        );
+      } catch (githubError: any) {
+        console.error('GitHub setup error during project pitch:', githubError.message);
+        githubSetupResult = {
+          success: false,
+          error: githubError.message || 'GitHub repository creation failed',
+        };
+      }
+    } else if (!githubToken) {
+      githubSetupResult = {
+        success: false,
+        error: 'GITHUB_TOKEN environment variable is not configured',
+      };
+    } else if (!user.githubUsername) {
+      githubSetupResult = {
+        success: false,
+        error: 'Creator does not have a linked GitHub username',
+      };
+    }
+
+    return NextResponse.json({
+      success: true,
+      project,
+      githubSetup: githubSetupResult,
+    });
   } catch (error: any) {
     console.error('Create Project Error:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });

@@ -1,0 +1,103 @@
+@layer components {
+  /* Closing CTA Section */
+  .closing {
+    padding: 70px 0 100px;
+    position: relative;
+    z-index: 1;
+  }
+  .closing-card {
+    min-height: 400px;
+    padding: 70px 24px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 28px;
+    background: radial-gradient(circle at 50% 15%, rgba(59, 130, 246, 0.22), transparent 48%),
+                rgba(11, 19, 38, 0.85);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+  .closing-grid {
+    position: absolute;
+    inset: 0;
+    opacity: 0.15;
+    background-image: linear-gradient(rgba(173, 198, 255, 0.12) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(173, 198, 255, 0.12) 1px, transparent 1px);
+    background-size: 38px 38px;
+    mask-image: radial-gradient(black, transparent 68%);
+  }
+  .closing h2 {
+    max-width: 730px;
+    margin: 18px auto 14px;
+    font-size: clamp(36px, 5vw, 54px);
+    line-height: 1.1;
+    z-index: 1;
+    color: #ffffff;
+    font-weight: 800;
+  }
+  .closing p {
+    color: var(--muted-light);
+    font-size: 15px;
+    z-index: 1;
+    max-width: 580px;
+  }
+  .closing-orb {
+    position: absolute;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: #adc6ff;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(11, 19, 38, 0.8);
+    border: 1px solid rgba(173, 198, 255, 0.35);
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+  }
+  .orb-left {
+    left: 8%;
+    top: 45%;
+  }
+  .orb-right {
+    right: 9%;
+    top: 25%;
+    color: var(--tertiary);
+  }
+
+  /* Footer */
+  .footer {
+    min-height: 140px;
+    display: grid;
+    grid-template-columns: 1fr 1.3fr 1fr auto;
+    gap: 24px;
+    align-items: center;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 12px;
+    padding: 30px 0;
+    position: relative;
+    z-index: 1;
+  }
+  .footer p {
+    max-width: 280px;
+    line-height: 1.6;
+    margin: 0;
+  }
+  .footer > div {
+    display: flex;
+    justify-content: center;
+    gap: 22px;
+  }
+  .footer a:hover {
+    color: white;
+  }
+  .footer > span {
+    white-space: nowrap;
+  }
+}

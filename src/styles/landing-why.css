@@ -1,0 +1,378 @@
+@layer components {
+  /* Why It Works Section */
+  .why-section {
+    position: relative;
+    padding: 130px 0 80px;
+    z-index: 1;
+  }
+  .why-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 580px;
+    background: radial-gradient(ellipse at 50% 0%, rgba(59, 130, 246, 0.14), transparent 62%);
+    pointer-events: none;
+  }
+  .why-hero {
+    text-align: center;
+    max-width: 900px;
+  }
+  .why-hero .eyebrow {
+    justify-content: center;
+  }
+  .why-hero h2 {
+    margin: 20px auto 20px;
+    max-width: 830px;
+    font-size: clamp(38px, 5vw, 58px);
+    line-height: 1.1;
+    color: #ffffff;
+    font-weight: 800;
+  }
+  .why-hero > p {
+    max-width: 680px;
+    margin: auto;
+    color: var(--muted-light);
+    font-size: 16px;
+    line-height: 1.75;
+  }
+  .flow-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 44px;
+    flex-wrap: wrap;
+  }
+  .flow-line > span {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--muted-light);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+  .flow-line i {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-style: normal;
+    color: #adc6ff;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    font-weight: 700;
+  }
+  .flow-line svg {
+    color: rgba(140, 144, 159, 0.6);
+  }
+
+  .features {
+    padding-top: 130px;
+  }
+  .feature-story {
+    min-height: 580px;
+    display: grid;
+    grid-template-columns: 0.8fr 1.2fr;
+    gap: 90px;
+    align-items: center;
+    margin-bottom: 90px;
+  }
+  .feature-story.feature-reverse {
+    grid-template-columns: 1.2fr 0.8fr;
+  }
+  .feature-reverse .feature-copy {
+    order: 2;
+  }
+  .feature-reverse .mockup-shell {
+    order: 1;
+  }
+  .feature-copy {
+    position: relative;
+  }
+  .feature-number {
+    display: block;
+    font-family: var(--font-outfit), sans-serif;
+    font-size: 14px;
+    color: #adc6ff;
+    margin-bottom: 24px;
+    font-weight: 700;
+  }
+  .feature-copy h3 {
+    margin: 14px 0 16px;
+    font-size: clamp(30px, 3.2vw, 42px);
+    line-height: 1.15;
+    color: #ffffff;
+    font-weight: 800;
+  }
+  .feature-copy > p {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.75;
+    margin: 0;
+  }
+  .feature-copy ul {
+    list-style: none;
+    padding: 0;
+    margin: 24px 0 0;
+    display: grid;
+    gap: 12px;
+  }
+  .feature-copy li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--muted-light);
+    font-size: 13px;
+  }
+  .feature-copy li svg {
+    color: var(--tertiary);
+    padding: 3px;
+    border-radius: 50%;
+    background: rgba(6, 182, 212, 0.12);
+  }
+  .mockup-shell {
+    position: relative;
+  }
+  .mockup-glow {
+    position: absolute;
+    z-index: -1;
+    inset: 18% 10%;
+    background: var(--primary);
+    filter: blur(90px);
+    opacity: 0.16;
+  }
+  .product-window {
+    min-height: 420px;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(11, 19, 38, 0.85);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), inset 0 1px rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s;
+  }
+  .mockup-shell:hover .product-window {
+    transform: translateY(-4px) rotateX(1deg);
+    border-color: rgba(173, 198, 255, 0.35);
+  }
+  .window-bar {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(2, 6, 23, 0.55);
+  }
+  .window-bar > div {
+    display: flex;
+    gap: 6px;
+  }
+  .window-bar i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.8);
+  }
+  .window-bar i:nth-child(2) {
+    background: rgba(245, 158, 11, 0.8);
+  }
+  .window-bar i:nth-child(3) {
+    background: rgba(16, 185, 129, 0.8);
+  }
+  .window-bar strong {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted-light);
+  }
+  .window-bar button {
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    letter-spacing: 2px;
+    cursor: pointer;
+  }
+  .mock-toolbar {
+    margin: 18px 18px 10px;
+    display: flex;
+    gap: 8px;
+  }
+  .mock-toolbar span {
+    flex: 1;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    color: var(--muted);
+    font-size: 11px;
+    background: rgba(2, 6, 23, 0.5);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  .mock-toolbar button {
+    color: #adc6ff;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0 12px;
+    cursor: pointer;
+  }
+  .mock-filter-chips {
+    display: flex;
+    gap: 7px;
+    padding: 0 18px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .mock-filter-chips span {
+    padding: 5px 10px;
+    font-size: 10px;
+    color: var(--muted);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .mock-filter-chips .active {
+    color: #ffffff;
+    background: rgba(59, 130, 246, 0.25);
+    border: 1px solid rgba(59, 130, 246, 0.4);
+  }
+  .mock-project-list {
+    padding: 10px 18px;
+  }
+  .mock-project {
+    min-height: 72px;
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .mock-project.selected {
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 12px;
+  }
+  .mock-project .project-symbol {
+    width: 36px;
+    height: 36px;
+  }
+  .mock-project > div {
+    flex: 1;
+    display: grid;
+    gap: 3px;
+  }
+  .mock-project strong {
+    font-size: 12px;
+    color: #ffffff;
+  }
+  .mock-project small {
+    color: var(--muted);
+    font-size: 10px;
+  }
+  .mock-project div span {
+    color: #34d399;
+    text-transform: uppercase;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+  .mock-project > svg {
+    color: var(--muted);
+  }
+
+  .match-head {
+    padding: 18px 20px 12px;
+  }
+  .match-head p {
+    margin: 6px 0 0;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--tertiary);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+  .candidate {
+    margin: 0 18px 10px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(2, 6, 23, 0.5);
+  }
+  .candidate-info {
+    flex: 1;
+  }
+  .candidate-info strong {
+    font-size: 12px;
+    color: #ffffff;
+  }
+  .candidate-info strong small {
+    margin-left: 6px;
+    color: #adc6ff;
+    font-size: 10px;
+    font-weight: 400;
+  }
+  .candidate-info p {
+    color: var(--muted);
+    font-size: 10px;
+    margin: 3px 0;
+  }
+  .candidate-info > span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--tertiary);
+    font-size: 9px;
+  }
+  .match-score {
+    text-align: center;
+  }
+  .match-score strong {
+    display: block;
+    color: var(--tertiary);
+    font-size: 17px;
+    font-weight: 800;
+  }
+  .match-score small {
+    color: var(--muted);
+    font-size: 9px;
+    text-transform: uppercase;
+  }
+  .suggestion-note {
+    margin: 16px 18px;
+    padding: 10px 12px;
+    color: var(--muted-light);
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px dashed var(--line-bright);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    line-height: 1.5;
+  }
+  .suggestion-note svg {
+    color: #adc6ff;
+  }
+
+}

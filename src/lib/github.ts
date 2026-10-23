@@ -28,8 +28,33 @@ export async function createGitHubRepository(
   ownerGithubUsername: string,
   ownerGithubToken: string
 ): Promise<GitHubRepoResponse | null> {
+  if (!ownerGithubToken) {
+    throw new Error('GitHub token is missing. Please set GITHUB_TOKEN environment variable.');
+  }
+
   try {
-    const repoName = `project-${projectTitle.toLowerCase().replace(/\s+/g, '-').substring(0, 30)}`;
+    await connectDB();
+    // Check if repository record already exists for this project
+    const existingRepo = await ProjectRepository.findOne({ projectId });
+    if (existingRepo) {
+      console.log(`ℹ️ GitHub repository already tracked for project: ${existingRepo.repositoryUrl}`);
+      return {
+        id: Number(existingRepo.githubId) || 0,
+        name: existingRepo.repositoryName,
+        html_url: existingRepo.repositoryUrl,
+        owner: {
+          login: ownerGithubUsername,
+        },
+      };
+    }
+
+    // Sanitize repo name according to GitHub naming rules (alphanumeric and hyphens)
+    const sanitizedTitle = projectTitle
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 30) || 'app';
+    const repoName = `project-${sanitizedTitle}`;
 
     const response = await axios.post(
       `${GITHUB_API_BASE}/user/repos`,
@@ -50,7 +75,6 @@ export async function createGitHubRepository(
 
     if (response.data) {
       // Save repository info to database
-      await connectDB();
       const projectRepo = new ProjectRepository({
         projectId,
         repositoryName: response.data.name,
@@ -64,8 +88,9 @@ export async function createGitHubRepository(
       return response.data;
     }
   } catch (error: any) {
-    console.error('❌ Error creating GitHub repository:', error.response?.data || error.message);
-    throw new Error(`Failed to create GitHub repository: ${error.message}`);
+    const errorDetails = error.response?.data?.message || error.message;
+    console.error('❌ Error creating GitHub repository:', errorDetails);
+    throw new Error(`Failed to create GitHub repository: ${errorDetails}`);
   }
 
   return null;
