@@ -13,7 +13,7 @@ Once a team is formed, the platform provides a comprehensive **Team Workspace Hu
 
 ---
 
-**[🌐 View Live Project Here](https://matchmaker-production-6fac.up.railway.app/)**
+**[🌐 View Live Project Here](https://matchmaker-80kx.onrender.com/)**
 
 
 ## ✨ Key Features
@@ -114,8 +114,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 4. **Pitch an Idea:** Click "Pitch an Idea", define your project's goals, max team size, and required roles/skills.
 5. **Manage Applications:** Project owners can review applications and accept/reject members via their dashboard.
 6. **Collaborate:** Once accepted, enter the **Team Workspace** to chat, create Kanban tasks, and start building!
-*Note: For testing purposes during development, you can use the `seed-projects.js` script to populate the database with mock projects across different GitHub profiles.*
-
 ---
 
 ## 📁 Project Structure
@@ -135,7 +133,6 @@ project-matchmaker/
 │   ├── lib/                # Utility functions, DB connection, GitHub/Analytics logic
 │   └── models/             # Mongoose schemas (User, Project, Task, Review, etc.)
 ├── server.js               # Custom Express server configuring Socket.io
-├── seed-projects.js        # Script to seed the database with mock projects
 ├── tailwind.config.js      # Tailwind CSS configuration
 └── package.json            # Project dependencies and scripts
 ```

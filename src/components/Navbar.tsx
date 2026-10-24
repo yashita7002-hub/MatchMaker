@@ -227,15 +227,10 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop Search */}
-          <NavbarSearch
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            onSearchSubmit={handleSearch}
-          />
+         
 
           {/* Desktop Navigation Links */}
-          <div className="hidden lg:flex items-center gap-1.5 ml-2">
+          <div className="hidden lg:flex items-center gap-3.5 ml-2">
             <Link
               href="/dashboard?section=feed"
               className={`text-sm font-medium px-3 py-1.5 rounded-lg transition-all ${

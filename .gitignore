@@ -46,7 +46,5 @@ next-env.d.ts
 /socket-server/uploads/
 
 strip-comments.js
-test-upload.js
-verify-db.ts
 
 .env.example

@@ -52,21 +52,7 @@ export default function NavbarSearch({
           d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
         />
       </svg>
-      <form onSubmit={onSearchSubmit} className="flex items-center">
-        <input
-          ref={searchInputRef}
-          type="text"
-          placeholder="Search projects, skills..."
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          onFocus={() => setSearchFocused(true)}
-          onBlur={() => setSearchFocused(false)}
-          className="bg-black/25 border border-white/10 text-sm text-[#dae2fd] rounded-xl pl-9 pr-8 py-2 focus:outline-none focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6]/40 w-60 lg:w-72 transition-all placeholder:text-[#8c909f]/60"
-        />
-        <div className="absolute right-2 px-1.5 py-0.5 border border-white/10 rounded-md text-[10px] text-[#8c909f] font-mono pointer-events-none bg-white/5">
-          /
-        </div>
-      </form>
+      
     </div>
   );
 }

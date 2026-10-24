@@ -6,8 +6,7 @@
     "dev": "node server.js",
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
-    "lint": "eslint",
-    "check-lines": "node scripts/check-line-counts.js"
+    "lint": "eslint"
   },
   "dependencies": {
     "@google/genai": "^2.31.0",

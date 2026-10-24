@@ -23,9 +23,8 @@ function HomeContent() {
     }
   }, [user, loading, router]);
 
-  // Reveal observer — re-runs whenever the section mounts or refreshes
+  // Observe reveal elements added after the initial render, such as fetched projects.
   useEffect(() => {
-    const elements = document.querySelectorAll(".reveal");
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -37,8 +36,31 @@ function HomeContent() {
       },
       { threshold: 0.12 }
     );
-    elements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+
+    const observeRevealElements = (root: ParentNode) => {
+      if (root instanceof Element && root.matches(".reveal")) {
+        observer.observe(root);
+      }
+      root.querySelectorAll(".reveal").forEach((element) => observer.observe(element));
+    };
+
+    observeRevealElements(document);
+
+    const mutationObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node instanceof Element) {
+            observeRevealElements(node);
+          }
+        });
+      });
+    });
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      observer.disconnect();
+      mutationObserver.disconnect();
+    };
   }, []);
 
   const handleWannaBuild = useCallback(() => {
